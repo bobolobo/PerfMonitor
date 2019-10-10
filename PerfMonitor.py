@@ -4,7 +4,6 @@ import csv
 import winstats
 import numpy
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import time
 import datetime as dt
 
@@ -153,9 +152,6 @@ def main():
 
     if choice == "record":
         # PHASE 1: Capture performance data to CSV file
-        #pm.file_opener_for_write()
-        #f = open(output_filename, 'wt')
-        #writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
         pm.data_collector()
     elif choice == "report":    ##Tested and PASSED
         # PHASE 2: Plot performance data from CSV capture file
@@ -163,9 +159,6 @@ def main():
         pm.data_plotter()
     elif choice == "all":
         # PHASE 1: Capture performance data to CSV file
-        #pm.file_opener_for_write()
-        f = open(output_filename, 'wt')
-        writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
         pm.data_collector()
         # PHASE 2: Plot performance data from CSV capture file
         pm.file_reader()
