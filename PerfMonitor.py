@@ -119,7 +119,7 @@ class PerfMonitor:
         fig = plt.figure()
         ax = fig.add_subplot()
 
-        plt.xlabel('Time')
+        plt.xlabel('Time for timer')
         plt.ylabel('Memory in Kilobytes')
         plt.title('Bricktest memory utilization')
 
