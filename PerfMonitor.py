@@ -78,11 +78,6 @@ class PerfMonitor:
         f.close()
         return
 
- #   def file_opener_for_read():
- #       input_filename = "c:\Temp\DocAuthPerfData.csv"
- #       f = open(input_filename, 'rt')
- #       return input_filename, f
-
     def file_reader(self):
         '''Read in csv performance file, line by line'''
 
