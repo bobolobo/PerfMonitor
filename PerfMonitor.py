@@ -45,7 +45,7 @@ class PerfMonitor:
         for ticks in range(1440):   # 1440 = 12 hours for 30 second ticks
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
-            time_track = time_track.strftime("%d/%m/%y %H:%M")  # Keep "d/m/y h/m" drop seconds.milliseconds
+            time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
             print(time_track)
 
             usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double',
