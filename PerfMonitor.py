@@ -42,7 +42,7 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis. (Eventually, replace real time for "ticks" for future.)
 
-        for ticks in range(1440):   # 1440 = 12 hours for 30 second ticks
+        for ticks in range(1440):  # 1440 = 12 hours for 30 second ticks
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
@@ -90,22 +90,22 @@ class PerfMonitor:
 
     def data_plotter(self):
         """Plot performance data from csv file using winstats library"""
-        A = numpy.array(PerfMonitor.data)
-        time_track = A[:, 0]  # Extract Timestamps (as string)
+        a = numpy.array(PerfMonitor.data)
+        time_track = a[:, 0]  # Extract Timestamps (as string)
 
         # Extract data from columns 2 to 7 and (convert to floats).
-        IDEMIA_app_private_bytes = A[:, 1]
-        IDEMIA_app_private_bytes = numpy.asfarray(IDEMIA_app_private_bytes, float)
-        IDEMIA_app_virtual_bytes = A[:, 2]
-        IDEMIA_app_virtual_bytes = numpy.asfarray(IDEMIA_app_virtual_bytes, float)
-        IDEMIA_app_working_set = A[:, 3]
-        IDEMIA_app_working_set = numpy.asfarray(IDEMIA_app_working_set, float)
-        IDEMIA_regula_private_bytes = A[:, 4]
-        IDEMIA_regula_private_bytes = numpy.asfarray(IDEMIA_regula_private_bytes, float)
-        IDEMIA_regula_virtual_bytes = A[:, 5]
-        IDEMIA_regula_virtual_bytes = numpy.asfarray(IDEMIA_regula_virtual_bytes, float)
-        IDEMIA_regula_working_set = A[:, 6]
-        IDEMIA_regula_working_set = numpy.asfarray(IDEMIA_regula_working_set, float)
+        idemia_app_private_bytes = a[:, 1]
+        idemia_app_private_bytes = numpy.asfarray(idemia_app_private_bytes, float)
+        idemia_app_virtual_bytes = a[:, 2]
+        idemia_app_virtual_bytes = numpy.asfarray(idemia_app_virtual_bytes, float)
+        idemia_app_working_set = a[:, 3]
+        idemia_app_working_set = numpy.asfarray(idemia_app_working_set, float)
+        idemia_regula_private_bytes = a[:, 4]
+        idemia_regula_private_bytes = numpy.asfarray(idemia_regula_private_bytes, float)
+        idemia_regula_virtual_bytes = a[:, 5]
+        idemia_regula_virtual_bytes = numpy.asfarray(idemia_regula_virtual_bytes, float)
+        idemia_regula_working_set = a[:, 6]
+        idemia_regula_working_set = numpy.asfarray(idemia_regula_working_set, float)
 
         # Create cartesian plane, draw labels and title
         fig = plt.figure()
@@ -118,10 +118,10 @@ class PerfMonitor:
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        plt.plot(time_track, IDEMIA_app_private_bytes / 10000, time_track, IDEMIA_app_virtual_bytes / 10000, time_track,
-                 IDEMIA_app_working_set / 10000,
-                 time_track, IDEMIA_regula_private_bytes / 10000, time_track, IDEMIA_regula_virtual_bytes / 10000,
-                 time_track, IDEMIA_regula_working_set / 10000)
+        plt.plot(time_track, idemia_app_private_bytes / 10000, time_track, idemia_app_virtual_bytes / 10000, time_track,
+                 idemia_app_working_set / 10000,
+                 time_track, idemia_regula_private_bytes / 10000, time_track, idemia_regula_virtual_bytes / 10000,
+                 time_track, idemia_regula_working_set / 10000)
         plt.grid(True)
         plt.gcf().autofmt_xdate()
         plt.legend(['IDEMIA private', 'IDEMIA virtual', 'IDEMIA working set', 'Regula private', 'Regula virtual',
@@ -148,7 +148,7 @@ def main():
     if choice == "record":
         # PHASE 1: Capture performance data to CSV file
         pm.data_collector()
-    elif choice == "report":  #Tested and PASSED
+    elif choice == "report":  # Tested and PASSED
         # PHASE 2: Plot performance data from CSV capture file
         pm.file_reader()
         pm.data_plotter()
