@@ -36,7 +36,7 @@ class PerfMonitor:
     def data_collector(self):
         """Collect performance data via winstats library. Then write each line of data to csv file"""
 
-        output_filename = 'c:\Temp\DocAuthPerfData.csv'
+        output_filename = r'c:\Temp\DocAuthPerfData.csv'
         f = open(output_filename, 'wt')
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
 
@@ -79,7 +79,7 @@ class PerfMonitor:
     def file_reader(self):
         """Read in csv performance file, line by line"""
 
-        input_filename = "c:\Temp\DocAuthPerfData.csv"
+        input_filename = r"c:\Temp\DocAuthPerfData.csv"
         f = open(input_filename, 'rt')
         with f:
             reader = csv.reader(f)
