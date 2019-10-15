@@ -48,7 +48,7 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis. (Eventually, replace real time for "ticks" for future.)
 
-        for ticks in range(1440):  # 1440 = 12 hours for 30 second tickssssss
+        for ticks in range(1440):  # 1440 = 12 hours for 30 second tick
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
