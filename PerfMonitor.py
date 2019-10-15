@@ -36,6 +36,12 @@ class PerfMonitor:
     def data_collector(self):
         """Collect performance data via winstats library. Then write each line of data to csv file"""
 
+        # Verify that DocAuth IS running.
+        if not self.process_checker():
+            print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+            exit(2)
+        print("Verified that DocAuth IS running.")
+
         output_filename = r'c:\Temp\DocAuthPerfData.csv'
         f = open(output_filename, 'wt')
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
@@ -138,12 +144,6 @@ def main():
 
     choice = pm.command_line_arguments()
     print(choice)
-
-    # Verify that DocAuth IS running.
-    if not pm.process_checker():
-        print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
-        exit(2)
-    print("Verified that DocAuth IS running.")
 
     if choice == "record":
         # PHASE 1: Capture performance data to CSV file
