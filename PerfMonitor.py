@@ -11,12 +11,20 @@ import datetime as dt
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     data = []
+    regula_process_name = ""
+    regula_pid = 0
+    regula_pid_counter = 0
 
     def process_checker(self):
-        """Verify that the IDEMIA... processes are running"""
-        for process in psutil.process_iter():
-            if 'IDEMIA' in process.name():
-                print(process.name())
+        """Verify that some IDEMIA... processes are running"""
+        for p in psutil.process_iter():
+            if 'IDEMIA.DocAuth.RegulaService.exe' in p.name():
+                if self.regula_pid == 0:  #If this is the first time through, capture the name and pid.
+                    self.regula_process_name = p.name()
+                    self.regula_pid = p.pid
+                elif self.regula_pid != p.pid:
+                    self.regula_pid_counter += 1  #Track times that Regula has restarted
+                    self.regula_pid = p.pid       #Get new pid value for Regula service
                 return True
         return False
 
@@ -48,7 +56,7 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis. (Eventually, replace real time for "ticks" for future.)
 
-        for ticks in range(1440):  # 1440 = 12 hours for 30 second tick
+        for ticks in range(8):  # 1440 = 12 hours for 30 second tick
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
@@ -76,10 +84,20 @@ class PerfMonitor:
             # Write a row of stats to the csv file.
             writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
 
-            print(ticks)
+            print(ticks, self.regula_process_name, self.regula_pid, " was restarted ", self.regula_pid_counter, " times.")
+
+            # See if the Regula service has restarted. IF there is a new pid, then it did restart.
+
+            self.process_checker()  #See if Regula service has been restarted, if yes then increment counter.
+
             time.sleep(30)
 
         f.close()
+
+        # Print out how many times Regula service was restarted
+        print(" ")
+        print(self.regula_process_name, " was restarted ", self.regula_pid_counter, " times.")
+
         return
 
     def file_reader(self):
