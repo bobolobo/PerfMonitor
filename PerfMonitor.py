@@ -56,38 +56,42 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis. (Eventually, replace real time for "ticks" for future.)
 
-        for ticks in range(8):  # 1440 = 12 hours for 30 second tick
+        for ticks in range(8):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
             print(time_track)
 
-            usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double',
-                                            delay=1000)
-            usage1 = float(usage1[0])
-            usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double',
-                                            delay=1000)
-            usage2 = float(usage2[0])
-            usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Working Set', fmts='double',
-                                            delay=1000)
-            usage3 = float(usage3[0])
-            usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double',
-                                            delay=1000)
-            usage4 = float(usage4[0])
-            usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double',
-                                            delay=1000)
-            usage5 = float(usage5[0])
-            usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set', fmts='double',
-                                            delay=1000)
-            usage6 = float(usage6[0])
+            try:
+                usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double',
+                                                delay=1000)
+                usage1 = float(usage1[0])
+                usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double',
+                                                delay=1000)
+                usage2 = float(usage2[0])
+                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Working Set', fmts='double',
+                                                delay=1000)
+                usage3 = float(usage3[0])
+                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double',
+                                                delay=1000)
+                usage4 = float(usage4[0])
+                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double',
+                                                delay=1000)
+                usage5 = float(usage5[0])
+                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set', fmts='double',
+                                                delay=1000)
+                usage6 = float(usage6[0])
 
-            # Write a row of stats to the csv file.
-            writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
+                # Write a row of stats to the csv file.
+                writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
+                # Output test status to console.
+                print(ticks, self.regula_process_name, self.regula_pid, " was restarted ", self.regula_pid_counter,
+                      " times.")
 
-            print(ticks, self.regula_process_name, self.regula_pid, " was restarted ", self.regula_pid_counter, " times.")
+            except WindowsError as error:  #If one of the processes is down, winstat errors, so handle it.
+                print(f"One of the processes was not available for interrogation by winstat.. Regula :) ) ")
 
             # See if the Regula service has restarted. IF there is a new pid, then it did restart.
-
             self.process_checker()  #See if Regula service has been restarted, if yes then increment counter.
 
             time.sleep(30)
