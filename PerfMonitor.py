@@ -1,4 +1,5 @@
 import sys
+from sys import exit, argv  # Have to specific import these so packaging/freezing works
 import psutil
 import csv
 import winstats
@@ -19,12 +20,12 @@ class PerfMonitor:
         """Verify that some IDEMIA... processes are running"""
         for p in psutil.process_iter():
             if 'IDEMIA.DocAuth.RegulaService.exe' in p.name():
-                if self.regula_pid == 0:  #If this is the first time through, capture the name and pid.
+                if self.regula_pid == 0:  # If this is the first time through, capture the name and pid.
                     self.regula_process_name = p.name()
                     self.regula_pid = p.pid
                 elif self.regula_pid != p.pid:
-                    self.regula_pid_counter += 1  #Track times that Regula has restarted
-                    self.regula_pid = p.pid       #Get new pid value for Regula service
+                    self.regula_pid_counter += 1  # Track times that Regula has restarted
+                    self.regula_pid = p.pid       # Get new pid value for Regula service
                 return True
         return False
 
