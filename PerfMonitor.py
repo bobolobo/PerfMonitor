@@ -12,6 +12,8 @@ import datetime as dt
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     data = []
+    time_measure_seconds = 30  # Number of seconds between consecutive data captures.
+    time_max_ticks = 20   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
     regula_process_name = ""
     regula_pid = 0
     regula_pid_counter = 0
@@ -49,19 +51,19 @@ class PerfMonitor:
         if not self.process_checker():
             print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
             exit(2)
-        print("Verified that DocAuth IS running.")
+        print("Verified that DocAuth IS running. \nRecording data...")
 
         output_filename = r'c:\Temp\DocAuthPerfData.csv'
         f = open(output_filename, 'wt')
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
 
-        # Run through ticks (time) for x-axis. (Eventually, replace real time for "ticks" for future.)
+        # Run through ticks (time) for x-axis.
 
-        for ticks in range(8):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
+        for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
-            time_track = time_track.strftime("%m/%d/%y %H:%M")  # Keep "m/d/y h/m" drop seconds.milliseconds
-            print(time_track)
+            time_track = time_track.strftime("%m/%d/%y %H:%M")   # Keep "m/d/y h/m" drop seconds.milliseconds
+            print(time_track, end=" ")
 
             try:
                 usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double',
@@ -86,22 +88,28 @@ class PerfMonitor:
                 # Write a row of stats to the csv file.
                 writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
                 # Output test status to console.
-                print(ticks, self.regula_process_name, self.regula_pid, " was restarted ", self.regula_pid_counter,
-                      " times.")
+                print(" tick:", ticks,"of", self.time_max_ticks, " name:", self.regula_process_name, " pid:", self.regula_pid, ", was restarted ",
+                      self.regula_pid_counter, " times.")
 
-            except WindowsError as error:  #If one of the processes is down, winstat errors, so handle it.
-                print(f"One of the processes was not available for interrogation by winstat.. Regula :) ) ")
+                # See if the Regula service has restarted. IF there is a new pid, then it did restart.
+                self.process_checker()  # See if Regula service has been restarted, if yes then increment counter.
 
-            # See if the Regula service has restarted. IF there is a new pid, then it did restart.
-            self.process_checker()  #See if Regula service has been restarted, if yes then increment counter.
+                time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
-            time.sleep(30)
+            except WindowsError as error:  # If one of the processes is down, winstat errors out, so handle it. Continue the loop.
+                print(f"One of the processes was not available for interrogation by winstat.. Regula? :)")
+                time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
+
+            except KeyboardInterrupt as error:  # On ctrl-c from keyboard, flush buffer, close file, exit. Break loop.
+                print("\n\nExiting...")
+                break
 
         f.close()
 
         # Print out how many times Regula service was restarted
-        print(" ")
+        print("\nData was collected and stored in file: ", output_filename)
         print(self.regula_process_name, " was restarted ", self.regula_pid_counter, " times.")
+
 
         return
 
@@ -166,7 +174,6 @@ def main():
     pm = PerfMonitor()
 
     choice = pm.command_line_arguments()
-    print(choice)
 
     if choice == "record":
         # PHASE 1: Capture performance data to CSV file
