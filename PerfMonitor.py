@@ -13,7 +13,7 @@ class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     data = []
     time_measure_seconds = 30  # Number of seconds between consecutive data captures.
-    time_max_ticks = 20   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
+    time_max_ticks = 2880   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
     regula_process_name = ""
     regula_pid = 0
     regula_pid_counter = 0
@@ -148,21 +148,23 @@ class PerfMonitor:
         fig = plt.figure()
         ax = fig.add_subplot()
 
-        plt.xlabel('Time for timer ')
+        plt.xlabel('Date/Time')
         plt.ylabel('Memory in Kilobytes')
         plt.title('Bricktest memory utilization')
 
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        plt.plot(time_track, idemia_app_private_bytes / 10000, time_track, idemia_app_virtual_bytes / 10000, time_track,
-                 idemia_app_working_set / 10000,
-                 time_track, idemia_regula_private_bytes / 10000, time_track, idemia_regula_virtual_bytes / 10000,
-                 time_track, idemia_regula_working_set / 10000)
+        plt.plot(time_track, idemia_app_private_bytes / 1000, time_track, idemia_app_virtual_bytes / 1000, time_track,
+                 idemia_app_working_set / 1000,
+                 time_track, idemia_regula_private_bytes / 1000, time_track, idemia_regula_virtual_bytes / 1000,
+                 time_track, idemia_regula_working_set / 1000)
+
         plt.grid(True)
         plt.gcf().autofmt_xdate()
         plt.legend(['IDEMIA private', 'IDEMIA virtual', 'IDEMIA working set', 'Regula private', 'Regula virtual',
                     'Regula working set'])
+
         plt.show()
 
         return
