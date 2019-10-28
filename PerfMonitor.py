@@ -149,16 +149,15 @@ class PerfMonitor:
         ax = fig.add_subplot()
 
         plt.xlabel('Date/Time')
-        plt.ylabel('Memory in Kilobytes')
+        plt.ylabel('Memory in Gigbytes')
         plt.title('Bricktest memory utilization')
 
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        plt.plot(time_track, idemia_app_private_bytes / 1000, time_track, idemia_app_virtual_bytes / 1000, time_track,
-                 idemia_app_working_set / 1000,
-                 time_track, idemia_regula_private_bytes / 1000, time_track, idemia_regula_virtual_bytes / 1000,
-                 time_track, idemia_regula_working_set / 1000)
+        plt.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000, time_track,
+                 idemia_app_working_set / 1000000000, time_track, idemia_regula_private_bytes / 1000000000, time_track,
+                 idemia_regula_virtual_bytes / 1000000000, time_track, idemia_regula_working_set / 1000000000)
 
         plt.grid(True)
         plt.gcf().autofmt_xdate()
