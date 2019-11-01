@@ -45,8 +45,8 @@ class PerfMonitor:
 
         try:
             parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
-            parser.add_argument('world', type=str, help='oldworld or newworld')
-            parser.add_argument('action', type=str, help='record | report | all')
+            parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
+            parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
             args = parser.parse_args()
             #print(args.world, args.action)
             return(args)
