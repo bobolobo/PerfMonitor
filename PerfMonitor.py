@@ -14,7 +14,7 @@ class PerfMonitor:
     args = ''
     data = []
     time_measure_seconds = 30  # Number of seconds between consecutive data captures.
-    time_max_ticks = 2880   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
+    time_max_ticks = 120   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
     monitored_process_name = ""
     monitored_pid = 0
     monitored_pid_counter = 0
@@ -53,11 +53,11 @@ class PerfMonitor:
             parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
             parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
             args = parser.parse_args()
-            #print(args.world, args.action)
+            # print(args.world, args.action)
             return(args)
         except Exception as err:
             print(err)
-            #exit(2)
+            # exit(2)
 
     def data_collector(self):
         """Collect performance data via winstats library. Then write each line of data to csv file"""
@@ -87,21 +87,27 @@ class PerfMonitor:
                 usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double',
                                                 delay=1000)
                 usage2 = float(usage2[0])
-                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Working Set', fmts='double',
+                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double',
                                                 delay=1000)
                 usage3 = float(usage3[0])
-                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double',
+                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double',
                                                 delay=1000)
                 usage4 = float(usage4[0])
-                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double',
+                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes', fmts='double',
                                                 delay=1000)
                 usage5 = float(usage5[0])
-                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set', fmts='double',
+                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes', fmts='double',
                                                 delay=1000)
                 usage6 = float(usage6[0])
+                usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes', fmts='double',
+                                                delay=1000)
+                usage7 = float(usage7[0])
+                usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes', fmts='double',
+                                                delay=1000)
+                usage8 = float(usage8[0])
 
                 # Write a row of stats to the csv file.
-                writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
+                writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6, usage7, usage8))
                 # Output test status to console.
                 print(" tick:", ticks,"of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:", self.monitored_pid, ", was restarted ",
                       self.monitored_pid_counter, " times.")
@@ -277,20 +283,23 @@ class PerfMonitor:
         a = numpy.array(PerfMonitor.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
-        # Extract data from columns 2 to 7 and (convert to floats).
+        # Extract data from columns 2 to 8 and (convert to floats).
         idemia_app_private_bytes = a[:, 1]
         idemia_app_private_bytes = numpy.asfarray(idemia_app_private_bytes, float)
         idemia_app_virtual_bytes = a[:, 2]
         idemia_app_virtual_bytes = numpy.asfarray(idemia_app_virtual_bytes, float)
-        idemia_app_working_set = a[:, 3]
-        idemia_app_working_set = numpy.asfarray(idemia_app_working_set, float)
-        idemia_regula_private_bytes = a[:, 4]
+        idemia_regula_private_bytes = a[:, 3]
         idemia_regula_private_bytes = numpy.asfarray(idemia_regula_private_bytes, float)
-        idemia_regula_virtual_bytes = a[:, 5]
+        idemia_regula_virtual_bytes = a[:, 4]
         idemia_regula_virtual_bytes = numpy.asfarray(idemia_regula_virtual_bytes, float)
-        idemia_regula_working_set = a[:, 6]
-        idemia_regula_working_set = numpy.asfarray(idemia_regula_working_set, float)
-
+        idemia_esf_private_bytes = a[:, 5]
+        idemia_esf_private_bytes = numpy.asfarray(idemia_esf_private_bytes, float)
+        idemia_esf_virtual_bytes = a[:, 6]
+        idemia_esf_virtual_bytes = numpy.asfarray(idemia_esf_virtual_bytes, float)
+        idemia_linecode_private_bytes = a[:, 7]
+        idemia_linecode_private_bytes = numpy.asfarray(idemia_linecode_private_bytes, float)
+        idemia_linecode_virtual_bytes = a[:, 8]
+        idemia_linecode_virtual_bytes = numpy.asfarray(idemia_linecode_virtual_bytes, float)
         # Create cartesian plane, draw labels and title
         fig = plt.figure()
         ax = fig.add_subplot()
@@ -307,14 +316,14 @@ class PerfMonitor:
         #         idemia_regula_virtual_bytes / 1000000000, time_track, idemia_regula_working_set / 1000000000)
 
         plt.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000,
-                 time_track, idemia_regula_private_bytes / 1000000000, time_track, idemia_regula_virtual_bytes / 1000000000)
+            time_track, idemia_regula_private_bytes / 1000000000, time_track, idemia_regula_virtual_bytes / 1000000000,
+            time_track, idemia_esf_private_bytes / 1000000000, time_track, idemia_esf_virtual_bytes / 1000000000,
+            time_track, idemia_linecode_private_bytes / 1000000000, time_track, idemia_linecode_virtual_bytes / 1000000000)
 
         plt.grid(True)
         plt.gcf().autofmt_xdate()
-        #plt.legend(['IDEMIA private', 'IDEMIA virtual', 'IDEMIA working set', 'Regula private', 'Regula virtual',
-        #            'Regula working set'])
-        plt.legend(['IDEMIA private', 'IDEMIA virtual', 'IDEMIA working set', 'Regula private', 'Regula virtual',
-                    'Regula working set'])
+        plt.legend(['DocAuth private', 'DocAuth virtual', 'Regula private', 'Regula virtual',
+                    'ESF private', 'ESF virtual', 'Linecode private', 'Linecode virtual'])
         plt.show()
 
         return
