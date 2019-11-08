@@ -113,7 +113,7 @@ class PerfMonitor:
                       self.monitored_pid_counter, " times.")
 
                 # See if the DocAuth service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker_oldworld()
+                self.process_checker()
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
@@ -255,26 +255,27 @@ class PerfMonitor:
         dataanalysisapihost_virtual_bytes = numpy.asfarray(dataanalysisapihost_virtual_bytes, float)
 
         # Create cartesian plane, draw labels and title
-        fig = plt.figure()
-        ax = fig.add_subplot()
+        fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
-        plt.xlabel('Date/Time')
-        plt.ylabel('Memory in Megabytes')
-        plt.title('Bricktest OldWorld memory utilization')
-
+        ax.set_title('Bricktest OldWorld memory utilization')
+        ax.set_xlabel('Date/Time')
+        ax.set_ylabel('Memory in Megabytes')
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        plt.plot(time_track, bgexaminer_private_bytes / 1000000, time_track, bgexaminer_virtual_bytes / 10000000,
+        ax.plot(time_track, bgexaminer_private_bytes / 1000000, time_track, bgexaminer_virtual_bytes / 10000000,
                  time_track, bgserver_private_bytes / 1000000, time_track, bgserver_virtual_bytes / 1000000,
                  time_track, docauthapp_private_bytes / 1000000, time_track, docauthapp_virtual_bytes / 1000000,
                  time_track, dataanalysisapihost_private_bytes / 1000000, time_track, dataanalysisapihost_virtual_bytes / 1000000)
 
-        plt.grid(True)
-        plt.gcf().autofmt_xdate()
-        plt.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual', 'docauth private',
+        ax.grid(True)
+        ax.figure.autofmt_xdate()
+        ax.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual', 'docauth private',
                     'docauth virtual', 'dataanalapi private', 'dataanalyapi virtual'])
-        plt.show()
+
+        # Output the chart.  Really only needed if NOT in "interactive mode".
+        # If in non-interactive mode, may need to use "plt.show()" instead.
+        fig.show()
 
         return
 
