@@ -300,31 +300,29 @@ class PerfMonitor:
         idemia_linecode_private_bytes = numpy.asfarray(idemia_linecode_private_bytes, float)
         idemia_linecode_virtual_bytes = a[:, 8]
         idemia_linecode_virtual_bytes = numpy.asfarray(idemia_linecode_virtual_bytes, float)
+
         # Create cartesian plane, draw labels and title
-        fig = plt.figure()
-        ax = fig.add_subplot()
+        fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
-        plt.xlabel('Date/Time')
-        plt.ylabel('Memory in Gigbytes')
-        plt.title('Bricktest memory utilization')
-
+        ax.set_title('Bricktest memory utilization')
+        ax.set_xlabel('Date/Time')
+        ax.set_ylabel('Memory in Gigabytes')
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        #plt.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000, time_track,
-        #         idemia_app_working_set / 1000000000, time_track, idemia_regula_private_bytes / 1000000000, time_track,
-        #         idemia_regula_virtual_bytes / 1000000000, time_track, idemia_regula_working_set / 1000000000)
-
-        plt.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000,
+        ax.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000,
             time_track, idemia_regula_private_bytes / 1000000000, time_track, idemia_regula_virtual_bytes / 1000000000,
             time_track, idemia_esf_private_bytes / 1000000000, time_track, idemia_esf_virtual_bytes / 1000000000,
             time_track, idemia_linecode_private_bytes / 1000000000, time_track, idemia_linecode_virtual_bytes / 1000000000)
 
-        plt.grid(True)
-        plt.gcf().autofmt_xdate()
-        plt.legend(['DocAuth private', 'DocAuth virtual', 'Regula private', 'Regula virtual',
-                    'ESF private', 'ESF virtual', 'Linecode private', 'Linecode virtual'])
-        plt.show()
+        ax.grid(True)
+        ax.figure.autofmt_xdate()
+        ax.legend(['DocAuth private', 'DocAuth virtual', 'Regula private', 'Regula virtual',
+                   'ESF private', 'ESF virtual', 'Linecode private', 'Linecode virtual'])
+
+        # Output the chart.  Really only needed if NOT in "interactive mode".
+        # If in non-interactive mode, may need to use "plt.show()" instead.
+        fig.show()
 
         return
 
