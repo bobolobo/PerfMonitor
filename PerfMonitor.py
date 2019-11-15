@@ -1,5 +1,6 @@
 import sys
 from sys import exit, argv  # Have to specific import these so packaging/freezing works
+import os.path
 import argparse
 import psutil
 import csv
@@ -14,7 +15,7 @@ class PerfMonitor:
     args = ''
     data = []
     time_measure_seconds = 30  # Number of seconds between consecutive data captures.
-    time_max_ticks = 120   # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
+    time_max_ticks = 4320  # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
     monitored_process_name = ""
     monitored_pid = 0
     monitored_pid_counter = 0
@@ -211,6 +212,14 @@ class PerfMonitor:
         """Read in csv performance file, line by line"""
 
         input_filename = r"c:\Temp\DocAuthPerfData.csv"
+
+        if not os.path.isfile(input_filename):  # Check for existing csv file.
+            print("File name: ", input_filename, " does not exist. Maybe you need to record data first ?")
+            exit(2)
+        if os.path.getsize(input_filename) == 0:  # Check for empty csv file.
+            print("File name: ", input_filename, " is empty. Maybe your last recording did not work ?")
+            exit(2)
+
         f = open(input_filename, 'rt')
         with f:
             reader = csv.reader(f)
@@ -223,6 +232,14 @@ class PerfMonitor:
         """Read in csv performance file, line by line"""
 
         input_filename = r"c:\Temp\DocAuthPerfData_OldWorld.csv"
+
+        if not os.path.isfile(input_filename):  # Check for existing csv file.
+            print("File name: ", input_filename, " does not exist. Maybe you need to record data first ?")
+            exit(2)
+        if os.path.getsize(input_filename) == 0:  # Check for empty csv file.
+            print("File name: ", input_filename, " is empty. Maybe your last recording did not work ?")
+            exit(2)
+
         f = open(input_filename, 'rt')
         with f:
             reader = csv.reader(f)
