@@ -183,10 +183,10 @@ class PerfMonitor:
 
         return
 
-    def file_reader(self):
+    def file_reader(self, input_filename):
         """Read in csv performance file, line by line"""
 
-        input_filename = r"c:\Temp\DocAuthPerfData.csv"
+        #input_filename = r"c:\Temp\DocAuthPerfData.csv"
 
         if not os.path.isfile(input_filename):  # Check for existing csv file.
             print("File name: ", input_filename, " does not exist. Maybe you need to record data first ?")
@@ -203,25 +203,6 @@ class PerfMonitor:
         f.close()
         return PerfMonitor.data
 
-    def file_reader_oldworld(self):
-        """Read in csv performance file, line by line"""
-
-        input_filename = r"c:\Temp\DocAuthPerfData_OldWorld.csv"
-
-        if not os.path.isfile(input_filename):  # Check for existing csv file.
-            print("File name: ", input_filename, " does not exist. Maybe you need to record data first ?")
-            exit(2)
-        if os.path.getsize(input_filename) == 0:  # Check for empty csv file.
-            print("File name: ", input_filename, " is empty. Maybe your last recording did not work ?")
-            exit(2)
-
-        f = open(input_filename, 'rt')
-        with f:
-            reader = csv.reader(f)
-            for x_row in reader:
-                PerfMonitor.data.append(x_row)
-        f.close()
-        return PerfMonitor.data
 
     def data_plotter_oldworld(self):
         """Plot performance data from csv file using winstats library"""
@@ -325,7 +306,7 @@ class PerfMonitor:
 def main():
 
     pm = PerfMonitor()
-    
+
     choice = pm.command_line_arguments()
 
     if choice.action == "record" and choice.world == "oldworld":
@@ -333,19 +314,22 @@ def main():
     elif choice.action == "record" and choice.world == "newworld":
         pm.data_collector()
     elif choice.action == "report" and choice.world == "oldworld":
-        pm.file_reader_oldworld()
+        # pm.file_reader_oldworld()
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter_oldworld()
     elif choice.action == "report" and choice.world == "newworld":
-        pm.file_reader()
+        pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
     elif choice.action == "all" and choice.world == "oldworld":
         pm.data_collector_oldworld()
-        pm.file_reader_oldworld()
+        # pm.file_reader_oldworld()
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter_oldworld()
     else:  # Assuming 'all' and 'newworld'
         pm.data_collector()
-        pm.file_reader()
+        pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
+
 
 if __name__ == "__main__":
     main()
