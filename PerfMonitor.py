@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import time
 import datetime as dt
 
+
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     args = ''
@@ -20,23 +21,10 @@ class PerfMonitor:
     monitored_pid = 0
     monitored_pid_counter = 0
 
-    def process_checker_oldworld(self):
+    def process_checker(self, process_to_monitor):
         """Verify that some IDEMIA... processes are running"""
         for p in psutil.process_iter():
-            if 'DocAuth.Applications.Authenticate.exe' in p.name():
-                if self.monitored_pid == 0:  # If this is the first time through, capture the name and pid.
-                    self.monitored_process_name = p.name()
-                    self.monitored_pid = p.pid
-                elif self.monitored_pid != p.pid:
-                    self.monitored_pid_counter += 1  # Track times that Regula has restarted
-                    self.monitored_pid = p.pid       # Get new pid value for Regula service
-                return True
-        return False
-
-    def process_checker(self):
-        """Verify that some IDEMIA... processes are running"""
-        for p in psutil.process_iter():
-            if 'IDEMIA.DocAuth.RegulaService.exe' in p.name():
+            if process_to_monitor in p.name():
                 if self.monitored_pid == 0:  # If this is the first time through, capture the name and pid.
                     self.monitored_process_name = p.name()
                     self.monitored_pid = p.pid
@@ -55,7 +43,7 @@ class PerfMonitor:
             parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
             args = parser.parse_args()
             # print(args.world, args.action)
-            return(args)
+            return args
         except Exception as err:
             print(err)
             # exit(2)
@@ -64,7 +52,7 @@ class PerfMonitor:
         """Collect performance data via winstats library. Then write each line of data to csv file"""
 
         # Verify that DocAuth IS running.
-        if not self.process_checker():
+        if not self.process_checker('IDEMIA.DocAuth.Document.App.exe'):
             print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
             exit(2)
         print("Verified that DocAuth IS running. \nRecording data...")
@@ -82,39 +70,31 @@ class PerfMonitor:
             print(time_track, end=" ")
 
             try:
-                usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double')
                 usage1 = float(usage1[0])
-                usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double')
                 usage2 = float(usage2[0])
-                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double')
                 usage3 = float(usage3[0])
-                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double')
                 usage4 = float(usage4[0])
-                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes', fmts='double')
                 usage5 = float(usage5[0])
-                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes', fmts='double')
                 usage6 = float(usage6[0])
-                usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes', fmts='double')
                 usage7 = float(usage7[0])
-                usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes', fmts='double')
                 usage8 = float(usage8[0])
 
                 # Write a row of stats to the csv file.
                 writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6, usage7, usage8))
                 # Output test status to console.
-                print(" tick:", ticks,"of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:", self.monitored_pid, ", was restarted ",
-                      self.monitored_pid_counter, " times.")
+                print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
+                      self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
 
                 # See if the DocAuth service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker()
+                self.process_checker('IDEMIA.DocAuth.Document.App.exe')
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
@@ -135,10 +115,11 @@ class PerfMonitor:
         return
 
     def data_collector_oldworld(self):
-        """Collect performance data of DocAuth OldWorld via winstats library. Then write each line of data to csv file"""
+        """Collect performance data of DocAuth OldWorld via winstats library.
+        Then write each line of data to csv file."""
 
         # Verify that DocAuth IS running.
-        if not self.process_checker_oldworld():
+        if not self.process_checker('DocAuth.Applications.Authenticate.exe'):
             print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
             exit(2)
         print("Verified that DocAuth IS running. \nRecording data...")
@@ -156,43 +137,37 @@ class PerfMonitor:
             print(time_track, end=" ")
 
             try:
-                usage1 = winstats.get_perf_data(r'\Process(BGExaminer)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage1 = winstats.get_perf_data(r'\Process(BGExaminer)\Private Bytes', fmts='double')
                 usage1 = float(usage1[0])
-                usage2 = winstats.get_perf_data(r'\Process(BGExaminer)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage2 = winstats.get_perf_data(r'\Process(BGExaminer)\Virtual Bytes', fmts='double')
                 usage2 = float(usage2[0])
-                usage3 = winstats.get_perf_data(r'\Process(bgServer)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage3 = winstats.get_perf_data(r'\Process(bgServer)\Private Bytes', fmts='double')
                 usage3 = float(usage3[0])
-                usage4 = winstats.get_perf_data(r'\Process(bgServer)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage4 = winstats.get_perf_data(r'\Process(bgServer)\Virtual Bytes', fmts='double')
                 usage4 = float(usage4[0])
-                usage5 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage5 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
+                                                fmts='double')
                 usage5 = float(usage5[0])
-                usage6 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage6 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
+                                                fmts='double')
                 usage6 = float(usage6[0])
-                usage7 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Private Bytes', fmts='double',
-                                                delay=1000)
+                usage7 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Private Bytes', fmts='double')
                 usage7 = float(usage7[0])
-                usage8 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Virtual Bytes', fmts='double',
-                                                delay=1000)
+                usage8 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Virtual Bytes', fmts='double')
                 usage8 = float(usage8[0])
 
                 # Write a row of stats to the csv file.
                 writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6, usage7, usage8))
                 # Output test status to console.
-                print(" tick:", ticks,"of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:", self.monitored_pid, ", was restarted ",
-                      self.monitored_pid_counter, " times.")
+                print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
+                      self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
 
                 # See if the Monitored service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker_oldworld()  # See if Regula service has been restarted, if yes then increment counter.
+                self.process_checker('DocAuth.Applications.Authenticate.exe')  # Inc count if service restarted.
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
-            except WindowsError as error:  # If one of the processes is down, winstat errors out, so handle it. Continue the loop.
+            except WindowsError as error:  # If a processes is down, winstat errors out, so handle it.
                 print(f"One of the processes was not available for interrogation by winstat.. Regula? :)")
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
 
@@ -281,14 +256,14 @@ class PerfMonitor:
 
         # Plot the data
         ax.plot(time_track, bgexaminer_private_bytes / 1000000, time_track, bgexaminer_virtual_bytes / 10000000,
-                 time_track, bgserver_private_bytes / 1000000, time_track, bgserver_virtual_bytes / 1000000,
-                 time_track, docauthapp_private_bytes / 1000000, time_track, docauthapp_virtual_bytes / 1000000,
-                 time_track, dataanalysisapihost_private_bytes / 1000000, time_track, dataanalysisapihost_virtual_bytes / 1000000)
+                time_track, bgserver_private_bytes / 1000000, time_track, bgserver_virtual_bytes / 1000000,
+                time_track, docauthapp_private_bytes / 1000000, time_track, docauthapp_virtual_bytes / 1000000,
+                time_track, dataanalysisapihost_private_bytes / 1000000, time_track, dataanalysisapihost_virtual_bytes / 1000000)
 
         ax.grid(True)
         ax.figure.autofmt_xdate()
-        ax.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual', 'docauth private',
-                    'docauth virtual', 'dataanalapi private', 'dataanalyapi virtual'])
+        ax.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual',
+                   'docauth private', 'docauth virtual', 'dataanalapi private', 'dataanalyapi virtual'])
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
@@ -346,11 +321,12 @@ class PerfMonitor:
 
 # Run this bitch
 
-def main():
-    pm = PerfMonitor()
 
+def main():
+
+    pm = PerfMonitor()
+    
     choice = pm.command_line_arguments()
-    #print("Printing args from Main", choice)
 
     if choice.action == "record" and choice.world == "oldworld":
         pm.data_collector_oldworld()
