@@ -151,9 +151,9 @@ class PerfMonitor:
                 usage6 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
                                                 fmts='double')
                 usage6 = float(usage6[0])
-                usage7 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Private Bytes', fmts='double')
+                usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double')
                 usage7 = float(usage7[0])
-                usage8 = winstats.get_perf_data(r'\Process(DataAnalysisApiHost)\Virtual Bytes', fmts='double')
+                usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double')
                 usage8 = float(usage8[0])
 
                 # Write a row of stats to the csv file.
@@ -222,10 +222,10 @@ class PerfMonitor:
         docauthapp_private_bytes = numpy.asfarray(docauthapp_private_bytes, float)
         docauthapp_virtual_bytes = a[:, 6]
         docauthapp_virtual_bytes = numpy.asfarray(docauthapp_virtual_bytes, float)
-        dataanalysisapihost_private_bytes = a[:, 7]
-        dataanalysisapihost_private_bytes = numpy.asfarray(dataanalysisapihost_private_bytes, float)
-        dataanalysisapihost_virtual_bytes = a[:, 8]
-        dataanalysisapihost_virtual_bytes = numpy.asfarray(dataanalysisapihost_virtual_bytes, float)
+        docauth_regulaservice_private_bytes = a[:, 7]
+        docauth_regulaservice_private_bytes = numpy.asfarray(docauth_regulaservice_private_bytes, float)
+        docauth_regulaservice_virtual_bytes = a[:, 8]
+        docauth_regulaservice_virtual_bytes = numpy.asfarray(docauth_regulaservice_virtual_bytes, float)
 
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
@@ -239,12 +239,12 @@ class PerfMonitor:
         ax.plot(time_track, bgexaminer_private_bytes / 1000000, time_track, bgexaminer_virtual_bytes / 10000000,
                 time_track, bgserver_private_bytes / 1000000, time_track, bgserver_virtual_bytes / 1000000,
                 time_track, docauthapp_private_bytes / 1000000, time_track, docauthapp_virtual_bytes / 1000000,
-                time_track, dataanalysisapihost_private_bytes / 1000000, time_track, dataanalysisapihost_virtual_bytes / 1000000)
+                time_track, docauth_regulaservice_private_bytes / 1000000, time_track, docauth_regulaservice_virtual_bytes / 1000000)
 
         ax.grid(True)
         ax.figure.autofmt_xdate()
         ax.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual',
-                   'docauth private', 'docauth virtual', 'dataanalapi private', 'dataanalyapi virtual'])
+                   'docauth private', 'docauth virtual', 'regula private', 'regula virtual'])
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
