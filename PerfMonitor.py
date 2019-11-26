@@ -14,10 +14,9 @@ import datetime as dt
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     args = ''
-
     data = []
     time_measure_seconds = 30  # Number of seconds between consecutive data captures.
-    time_max_ticks = 4320  # Max number of ticks to capture data. 1440 = 12 hours for 30 second ticks | 4320 = 36 hours.
+    time_max_ticks = 0
     monitored_process_name = ""
     monitored_pid = 0
     monitored_pid_counter = 0
@@ -43,8 +42,13 @@ class PerfMonitor:
             parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
             parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
             parser.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
+            parser.add_argument('hours', type=int, help='number of hours')
             args = parser.parse_args()
             #print("Commandline def: ", args.esf)
+
+            self.time_max_ticks = args.hours * 2  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
+            print(self.time_max_ticks)
+
             return args
         except Exception as err:
             print(err)
@@ -66,6 +70,7 @@ class PerfMonitor:
         # Run through ticks (time) for x-axis.
 
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
+
             # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")   # Keep "m/d/y h/m" drop seconds.milliseconds
@@ -258,7 +263,8 @@ class PerfMonitor:
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
-        fig.show()
+        #fig.show()
+        plt.show()
 
         return
 
@@ -321,7 +327,8 @@ class PerfMonitor:
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
-        fig.show()
+        #fig.show()
+        plt.show()
 
         return
 
