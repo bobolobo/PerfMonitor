@@ -47,7 +47,7 @@ class PerfMonitor:
             #print("Commandline def: ", args.esf)
 
             self.time_max_ticks = args.hours * 2  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
-            print(self.time_max_ticks)
+            #print(self.time_max_ticks)
 
             return args
         except Exception as err:
@@ -57,14 +57,17 @@ class PerfMonitor:
     def data_collector(self):
         """Collect performance data via winstats library. Then write each line of data to csv file"""
 
+        choicetemp = self.command_line_arguments()
+
         # Verify that DocAuth IS running.
         if not self.process_checker('IDEMIA.DocAuth.Document.App.exe'):
             print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
             exit(2)
-        print("Verified that DocAuth IS running. \nRecording data...")
+        print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
+        print("CTRL-C to stop recording earlier.")
 
         output_filename = r'c:\Temp\DocAuthPerfData.csv'
-        f = open(output_filename, 'wt')
+        f = open(output_filename, 'wt', buffering=1)
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
 
         # Run through ticks (time) for x-axis.
@@ -133,14 +136,17 @@ class PerfMonitor:
         """Collect performance data of DocAuth OldWorld via winstats library.
         Then write each line of data to csv file."""
 
+        choicetemp = self.command_line_arguments()
+
         # Verify that DocAuth IS running.
         if not self.process_checker('DocAuth.Applications.Authenticate.exe'):
             print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
             exit(2)
-        print("Verified that DocAuth IS running. \nRecording data...")
+        print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
+        print("CTRL-C to stop recording earlier.")
 
         output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
-        f = open(output_filename, 'wt')
+        f = open(output_filename, 'wt', buffering=1)
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
 
         # Run through ticks (time) for x-axis.
