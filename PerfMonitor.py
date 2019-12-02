@@ -46,7 +46,7 @@ class PerfMonitor:
             args = parser.parse_args()
             #print("Commandline def: ", args.esf)
 
-            self.time_max_ticks = args.hours * 2  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
+            self.time_max_ticks = args.hours * 120  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
             #print(self.time_max_ticks)
 
             return args
