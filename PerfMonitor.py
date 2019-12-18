@@ -255,7 +255,7 @@ class PerfMonitor:
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
         # Build chart title and include number of hours that the test ran for.
-        chart_title = "Bricktest memory utilization over " + str(total_elapsed_time) + " hour(s)"
+        chart_title = "Bricktest memory utilization ran for " + str(total_elapsed_time) + " hour(s)"
         ax.set_title(chart_title)
 
         ax.set_xlabel('Date/Time')
@@ -315,7 +315,7 @@ class PerfMonitor:
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
         # Build chart title and include number of hours that the test ran for.
-        chart_title = "Bricktest memory utilization over " + str(total_elapsed_time) + " hour(s)"
+        chart_title = "Bricktest memory utilization ran for " + str(total_elapsed_time) + " hour(s)"
         ax.set_title(chart_title)
 
         ax.set_xlabel('Date/Time')
