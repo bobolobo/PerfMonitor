@@ -47,7 +47,6 @@ class PerfMonitor:
             #print("Commandline def: ", args.esf)
 
             self.time_max_ticks = args.hours * 120  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
-            #print(self.time_max_ticks)
 
             return args
         except Exception as err:
@@ -230,6 +229,10 @@ class PerfMonitor:
         a = numpy.array(PerfMonitor.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
+        # Figure out how many hours worth of data came from the csv file
+        total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        total_elapsed_time = round(total_elapsed_time, 2)
+
         # Extract data from columns 2 to 7 and (convert to floats).
         bgexaminer_private_bytes = a[:, 1]
         bgexaminer_private_bytes = numpy.asfarray(bgexaminer_private_bytes, float)
@@ -251,7 +254,10 @@ class PerfMonitor:
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
-        ax.set_title('Bricktest OldWorld memory utilization')
+        # Build chart title and include number of hours that the test ran for.
+        chart_title = "Bricktest memory utilization over " + str(total_elapsed_time) + " hour(s)"
+        ax.set_title(chart_title)
+
         ax.set_xlabel('Date/Time')
         ax.set_ylabel('Memory in Megabytes')
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
@@ -279,6 +285,10 @@ class PerfMonitor:
         a = numpy.array(PerfMonitor.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
+        # Figure out how many hours worth of data came from the csv file
+        total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        total_elapsed_time = round(total_elapsed_time, 2)
+
         # Extract data from columns 2 to 8 and (convert to floats).
         idemia_app_private_bytes = a[:, 1]
         idemia_app_private_bytes = numpy.asfarray(idemia_app_private_bytes, float)
@@ -304,7 +314,10 @@ class PerfMonitor:
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
 
-        ax.set_title('Bricktest memory utilization')
+        # Build chart title and include number of hours that the test ran for.
+        chart_title = "Bricktest memory utilization over " + str(total_elapsed_time) + " hour(s)"
+        ax.set_title(chart_title)
+
         ax.set_xlabel('Date/Time')
         ax.set_ylabel('Memory in Gigabytes')
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
