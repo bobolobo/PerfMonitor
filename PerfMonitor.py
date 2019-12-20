@@ -15,8 +15,8 @@ class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
     args = ''
     data = []
-    time_measure_seconds = 30  # Number of seconds between consecutive data captures.
-    time_max_ticks = 0
+    time_measure_seconds = 60  # Number of seconds between consecutive data captures.
+    time_max_ticks = 0  # Will be computed from the "hours" argument in the command line.
     monitored_process_name = ""
     monitored_pid = 0
     monitored_pid_counter = 0
@@ -46,7 +46,8 @@ class PerfMonitor:
             args = parser.parse_args()
             #print("Commandline def: ", args.esf)
 
-            self.time_max_ticks = args.hours * 120  # mult by 2 because every 30 seconds a measure is taken. Twice a min.
+            #self.time_max_ticks = args.hours * 120  # mult by 120 because every 30 seconds a measure is taken. Twice a min.
+            self.time_max_ticks = args.hours * 60  # mult by 60 because every 60 seconds a measure is taken. Once a min.
 
             return args
         except Exception as err:
@@ -230,7 +231,8 @@ class PerfMonitor:
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
         # Figure out how many hours worth of data came from the csv file
-        total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        # total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        total_elapsed_time = (len(a) / 60)   # (/60 to get hours)
         total_elapsed_time = round(total_elapsed_time, 2)
 
         # Extract data from columns 2 to 7 and (convert to floats).
@@ -286,7 +288,8 @@ class PerfMonitor:
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
         # Figure out how many hours worth of data came from the csv file
-        total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        # total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
+        total_elapsed_time = (len(a) / 60)   # (/60 to get hours)
         total_elapsed_time = round(total_elapsed_time, 2)
 
         # Extract data from columns 2 to 8 and (convert to floats).
