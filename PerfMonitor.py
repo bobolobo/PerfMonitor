@@ -21,6 +21,9 @@ class PerfMonitor:
     monitored_pid = 0
     monitored_pid_counter = 0
 
+    def get_value(self, value):
+        return float(value)
+
     def process_checker(self, process_to_monitor):
         """Verify that some IDEMIA... processes are running"""
         for p in psutil.process_iter():
@@ -72,6 +75,16 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis.
 
+        stats_list = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
+                      r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
+                      r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes',
+                      r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes']
+
+        stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
+                          r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes']
+
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
 
             # New World processes
@@ -80,32 +93,21 @@ class PerfMonitor:
             print(time_track, end=" ")
 
             try:
-                usage1 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes', fmts='double')
-                usage1 = float(usage1[0])
-                usage2 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes', fmts='double')
-                usage2 = float(usage2[0])
-                usage3 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double')
-                usage3 = float(usage3[0])
-                usage4 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double')
-                usage4 = float(usage4[0])
-                usage5 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes', fmts='double')
-                usage5 = float(usage5[0])
-                usage6 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes', fmts='double')
-                usage6 = float(usage6[0])
+
+                # Using a list comprehenzion instead of a bunch of variables.
+                line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
                 choicetemp = self.command_line_arguments()
-                if (choicetemp.esf == 'esf'):  #
-                    usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes', fmts='double')
-                    usage7 = float(usage7[0])
-                    usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes', fmts='double')
-                    usage8 = float(usage8[0])
+                if choicetemp.esf == 'esf':
+
+                    line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
 
                     # Write a row of stats to the csv file including ESF stats.
-                    writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6, usage7, usage8))
+                    writer.writerow((time_track, line_of_data, line_of_data_esf))
                 else:
                     # Write a row of stats to the csv file NOT including ESF stats.
-                    writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6))
+                    writer.writerow((time_track, [self.get_value(r) for r in line_of_data]))
 
                 # Output test status to console.
                 print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
