@@ -9,6 +9,7 @@ import numpy
 import matplotlib.pyplot as plt
 import time
 import datetime as dt
+import re
 
 
 class PerfMonitor:
@@ -57,6 +58,14 @@ class PerfMonitor:
             print(err)
             # exit(2)
 
+    def string_cleaner(self, temp_string_buffer):
+        """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
+        # Strip brackets, single quotes, parens from buffer. Matplotlib seems to handover data with commas at the end.
+        tempstring = (str(temp_string_buffer).translate(str.maketrans( {'[': '', ']': '', '\'': '', ')': '', '(': ''})))
+        tempstring = re.sub( r',,', ',', tempstring )  # Remove double commas
+        tempstring = re.sub( r',$', '', tempstring )  # Remove Trailing comma
+        return(tempstring)
+
     def data_collector(self):
         """Collect performance data via winstats library. Then write each line of data to csv file"""
 
@@ -71,7 +80,7 @@ class PerfMonitor:
 
         output_filename = r'c:\Temp\DocAuthPerfData.csv'
         f = open(output_filename, 'wt', buffering=1)
-        writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
+        writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
         # Run through ticks (time) for x-axis.
 
@@ -94,7 +103,7 @@ class PerfMonitor:
 
             try:
 
-                # Using a list comprehenzion instead of a bunch of variables.
+                # Using a list comprehension instead of a bunch of variables.
                 line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
@@ -104,10 +113,12 @@ class PerfMonitor:
                     line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
 
                     # Write a row of stats to the csv file including ESF stats.
-                    writer.writerow((time_track, line_of_data, line_of_data_esf))
+                    writer.writerow((time_track, self.string_cleaner(line_of_data), self.string_cleaner(line_of_data_esf)))
                 else:
-                    # Write a row of stats to the csv file NOT including ESF stats.
-                    writer.writerow((time_track, [self.get_value(r) for r in line_of_data]))
+                    # @@@@@Write a row of stats to the csv file NOT including ESF stats.
+                    # temp_string = self.string_cleaner(line_of_data)
+                    # writer.writerow((time_track, line_of_data))
+                    writer.writerow((time_track, self.string_cleaner(line_of_data)))
 
                 # Output test status to console.
                 print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
@@ -152,6 +163,7 @@ class PerfMonitor:
         writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
 
         # Run through ticks (time) for x-axis.
+        
 
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
             # New World processes
