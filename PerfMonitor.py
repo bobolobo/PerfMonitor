@@ -115,9 +115,7 @@ class PerfMonitor:
                     # Write a row of stats to the csv file including ESF stats.
                     writer.writerow((time_track, self.string_cleaner(line_of_data), self.string_cleaner(line_of_data_esf)))
                 else:
-                    # @@@@@Write a row of stats to the csv file NOT including ESF stats.
-                    # temp_string = self.string_cleaner(line_of_data)
-                    # writer.writerow((time_track, line_of_data))
+                    # Write a row of stats to the csv file NOT including ESF stats.
                     writer.writerow((time_track, self.string_cleaner(line_of_data)))
 
                 # Output test status to console.
@@ -160,10 +158,18 @@ class PerfMonitor:
 
         output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
         f = open(output_filename, 'wt', buffering=1)
-        writer = csv.writer(f, delimiter=',', quotechar='"', lineterminator='\n')
+        writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
         # Run through ticks (time) for x-axis.
-        
+
+        stats_list = [r'\Process(BGExaminer)\Private Bytes',
+                      r'\Process(BGExaminer)\Virtual Bytes',
+                      r'\Process(bgServer)\Private Bytes',
+                      r'\Process(bgServer)\Virtual Bytes',
+                      r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
+                      r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes']
 
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
             # New World processes
@@ -172,27 +178,12 @@ class PerfMonitor:
             print(time_track, end=" ")
 
             try:
-                usage1 = winstats.get_perf_data(r'\Process(BGExaminer)\Private Bytes', fmts='double')
-                usage1 = float(usage1[0])
-                usage2 = winstats.get_perf_data(r'\Process(BGExaminer)\Virtual Bytes', fmts='double')
-                usage2 = float(usage2[0])
-                usage3 = winstats.get_perf_data(r'\Process(bgServer)\Private Bytes', fmts='double')
-                usage3 = float(usage3[0])
-                usage4 = winstats.get_perf_data(r'\Process(bgServer)\Virtual Bytes', fmts='double')
-                usage4 = float(usage4[0])
-                usage5 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
-                                                fmts='double')
-                usage5 = float(usage5[0])
-                usage6 = winstats.get_perf_data(r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
-                                                fmts='double')
-                usage6 = float(usage6[0])
-                usage7 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes', fmts='double')
-                usage7 = float(usage7[0])
-                usage8 = winstats.get_perf_data(r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes', fmts='double')
-                usage8 = float(usage8[0])
+                # Using a list comprehension instead of a bunch of variables.
+                line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Write a row of stats to the csv file.
-                writer.writerow((time_track, usage1, usage2, usage3, usage4, usage5, usage6, usage7, usage8))
+                writer.writerow((time_track, self.string_cleaner(line_of_data)))
+
                 # Output test status to console.
                 print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
                       self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
