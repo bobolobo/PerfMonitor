@@ -66,25 +66,46 @@ class PerfMonitor:
         tempstring = re.sub( r',$', '', tempstring )  # Remove Trailing comma
         return(tempstring)
 
-    def data_collector(self):
-        """Collect performance data via winstats library. Then write each line of data to csv file"""
+    def data_collector(self, which_world):
+        """Collect performance via winstats library. Then write each line of data to csv file"""
 
         choicetemp = self.command_line_arguments()
 
-        # Verify that DocAuth IS running.
-        if not self.process_checker('IDEMIA.DocAuth.Document.App.exe'):
-            print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
-            exit(2)
+        # Verify that DocAuth IS running, and assign csv filename based on old vs new world
+        if which_world == 'newworld':
+            if not self.process_checker('IDEMIA.DocAuth.Document.App.exe'):
+                print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'oldworld':
+            if not self.process_checker('DocAuth.Applications.Authenticate.exe'):
+                print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+
         print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
         print("CTRL-C to stop recording earlier.")
 
-        output_filename = r'c:\Temp\DocAuthPerfData.csv'
-        f = open(output_filename, 'wt', buffering=1)
-        writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        # output_filename = r'c:\Temp\DocAuthPerfData.csv'
+        # f = open(output_filename, 'wt', buffering=1)
+        # writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
         # Run through ticks (time) for x-axis.
 
-        stats_list = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
+        stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
+                      r'\Process(BGExaminer)\Virtual Bytes',
+                      r'\Process(bgServer)\Private Bytes',
+                      r'\Process(bgServer)\Virtual Bytes',
+                      r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
+                      r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes']
+
+        stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                       r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
                       r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
                       r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
@@ -101,15 +122,20 @@ class PerfMonitor:
             time_track = time_track.strftime("%m/%d/%y %H:%M")   # Keep "m/d/y h/m" drop seconds.milliseconds
             print(time_track, end=" ")
 
-            try:
+            # Load the processes to check based on whether oldworld or newworld
+            if which_world == 'newworld':
+                stats_list = stats_list_newworld
+            else:
+                stats_list = stats_list_oldworld
 
+            try:
                 # Using a list comprehension instead of a bunch of variables.
                 line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
                 choicetemp = self.command_line_arguments()
-                if choicetemp.esf == 'esf':
 
+                if choicetemp.esf == 'esf':
                     line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
 
                     # Write a row of stats to the csv file including ESF stats.
@@ -143,71 +169,6 @@ class PerfMonitor:
 
         return
 
-    def data_collector_oldworld(self):
-        """Collect performance data of DocAuth OldWorld via winstats library.
-        Then write each line of data to csv file."""
-
-        choicetemp = self.command_line_arguments()
-
-        # Verify that DocAuth IS running.
-        if not self.process_checker('DocAuth.Applications.Authenticate.exe'):
-            print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
-            exit(2)
-        print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
-        print("CTRL-C to stop recording earlier.")
-
-        output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
-        f = open(output_filename, 'wt', buffering=1)
-        writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-
-        # Run through ticks (time) for x-axis.
-
-        stats_list = [r'\Process(BGExaminer)\Private Bytes',
-                      r'\Process(BGExaminer)\Virtual Bytes',
-                      r'\Process(bgServer)\Private Bytes',
-                      r'\Process(bgServer)\Virtual Bytes',
-                      r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
-                      r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes']
-
-        for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
-            # New World processes
-            time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
-            time_track = time_track.strftime("%m/%d/%y %H:%M")   # Keep "m/d/y h/m" drop seconds.milliseconds
-            print(time_track, end=" ")
-
-            try:
-                # Using a list comprehension instead of a bunch of variables.
-                line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
-
-                # Write a row of stats to the csv file.
-                writer.writerow((time_track, self.string_cleaner(line_of_data)))
-
-                # Output test status to console.
-                print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
-                      self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
-
-                # See if the Monitored service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker('DocAuth.Applications.Authenticate.exe')  # Inc count if service restarted.
-
-                time.sleep(self.time_measure_seconds)  # Sleep for time slice
-
-            except WindowsError as error:  # If a processes is down, winstat errors out, so handle it.
-                print(f"One of the processes was not available for interrogation by winstat.. Regula? :)")
-                time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
-
-            except KeyboardInterrupt as error:  # On ctrl-c from keyboard, flush buffer, close file, exit. Break loop.
-                print("\n\nExiting...")
-                break
-
-        f.close()
-
-        # Print out how many times Monitored service was restarted
-        print("\nData was collected and stored in file: ", output_filename)
-        print(self.monitored_process_name, " was restarted ", self.monitored_pid_counter, " times.")
-
-        return
 
     def file_reader(self, input_filename):
         """Read in csv performance file, line by line"""
@@ -369,9 +330,9 @@ def main():
     choice = pm.command_line_arguments()
 
     if choice.action == "record" and choice.world == "oldworld":
-        pm.data_collector_oldworld()
+        pm.data_collector("oldworld")
     elif choice.action == "record" and choice.world == "newworld":
-        pm.data_collector()
+        pm.data_collector("newworld")
     elif choice.action == "report" and choice.world == "oldworld":
         # pm.file_reader_oldworld()
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
