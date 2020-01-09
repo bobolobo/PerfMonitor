@@ -90,10 +90,6 @@ class PerfMonitor:
         print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
         print("CTRL-C to stop recording earlier.")
 
-        # output_filename = r'c:\Temp\DocAuthPerfData.csv'
-        # f = open(output_filename, 'wt', buffering=1)
-        # writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-
         # Run through ticks (time) for x-axis.
 
         stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
@@ -334,19 +330,18 @@ def main():
     elif choice.action == "record" and choice.world == "newworld":
         pm.data_collector("newworld")
     elif choice.action == "report" and choice.world == "oldworld":
-        # pm.file_reader_oldworld()
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter_oldworld()
     elif choice.action == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
     elif choice.action == "all" and choice.world == "oldworld":
-        pm.data_collector_oldworld()
+        pm.data_collector("oldworld")
         # pm.file_reader_oldworld()
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter_oldworld()
     else:  # Assuming 'all' and 'newworld'
-        pm.data_collector()
+        pm.data_collector("newworld")
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
 
