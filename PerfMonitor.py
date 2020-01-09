@@ -40,7 +40,6 @@ class PerfMonitor:
 
     def command_line_arguments(self):
         """Read and evaluate commandline arguments, returns the single commandline argument"""
-
         try:
             parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
             parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
@@ -48,15 +47,13 @@ class PerfMonitor:
             parser.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser.add_argument('hours', type=int, help='number of hours')
             args = parser.parse_args()
-            #print("Commandline def: ", args.esf)
 
-            #self.time_max_ticks = args.hours * 120  # mult by 120 because every 30 seconds a measure is taken. Twice a min.
             self.time_max_ticks = args.hours * 60  # mult by 60 because every 60 seconds a measure is taken. Once a min.
 
             return args
         except Exception as err:
             print(err)
-            # exit(2)
+            return
 
     def string_cleaner(self, temp_string_buffer):
         """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
@@ -64,7 +61,7 @@ class PerfMonitor:
         tempstring = (str(temp_string_buffer).translate(str.maketrans( {'[': '', ']': '', '\'': '', ')': '', '(': ''})))
         tempstring = re.sub( r',,', ',', tempstring )  # Remove double commas
         tempstring = re.sub( r',$', '', tempstring )  # Remove Trailing comma
-        return(tempstring)
+        return tempstring
 
     def data_collector(self, which_world):
         """Collect performance via winstats library. Then write each line of data to csv file"""
@@ -125,7 +122,7 @@ class PerfMonitor:
                 stats_list = stats_list_oldworld
 
             try:
-                # Using a list comprehension instead of a bunch of variables.
+                # Using a list comprehension instead of a bunch of variables. Interrogate perf data.
                 line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
@@ -149,7 +146,7 @@ class PerfMonitor:
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
-            except WindowsError as error:  # If one of the processes is down, winstat errors out, so handle it. Continue the loop.
+            except WindowsError as error:  # Processes down? Winstat errors out, so handle it. Continue the loop.
                 print(f"One of the processes was not available for interrogation by winstat.. Regula? :)")
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
 
@@ -164,7 +161,6 @@ class PerfMonitor:
         print(self.monitored_process_name, " was restarted ", self.monitored_pid_counter, " times.")
 
         return
-
 
     def file_reader(self, input_filename):
         """Read in csv performance file, line by line"""
@@ -238,7 +234,6 @@ class PerfMonitor:
         # If in non-interactive mode, may need to use "plt.show()" instead.
         #fig.show()
         plt.show()
-
         return
 
     def data_plotter(self):
