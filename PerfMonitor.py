@@ -169,8 +169,6 @@ class PerfMonitor:
     def file_reader(self, input_filename):
         """Read in csv performance file, line by line"""
 
-        #input_filename = r"c:\Temp\DocAuthPerfData.csv"
-
         if not os.path.isfile(input_filename):  # Check for existing csv file.
             print("File name: ", input_filename, " does not exist. Maybe you need to record data first ?")
             exit(2)
@@ -185,7 +183,6 @@ class PerfMonitor:
                 PerfMonitor.data.append(x_row)
         f.close()
         return PerfMonitor.data
-
 
     def data_plotter_oldworld(self):
         """Plot performance data from csv file using winstats library"""
