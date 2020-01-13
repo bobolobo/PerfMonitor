@@ -21,6 +21,7 @@ class PerfMonitor:
     monitored_process_name = ""
     monitored_pid = 0
     monitored_pid_counter = 0
+    headers = []
 
     def get_value(self, value):
         return float(value)
@@ -108,25 +109,37 @@ class PerfMonitor:
         stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes']
 
+        # Load the processes to check based on whether oldworld or newworld
+        if which_world == 'newworld':
+            stats_list = stats_list_newworld
+        else:
+            stats_list = stats_list_oldworld
+
+        # Capture ESF data only if 'ESF' argument was given on commandline.
+        choicetemp = self.command_line_arguments()
+
+        # Write header file to csv containing name of all perf stats being tracked.
+        if choicetemp.esf == 'esf':
+            # Write the perf names to the csv file including ESF stats.
+            writer.writerow((stats_list + stats_list_esf))
+        else:
+            # Write perf names to the csv file NOT including ESF stats.
+            writer.writerow((stats_list))
+
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
 
-            # New World processes
             time_track = dt.datetime.fromtimestamp(time.time())  # Get timestamp-style time
             time_track = time_track.strftime("%m/%d/%y %H:%M")   # Keep "m/d/y h/m" drop seconds.milliseconds
             print(time_track, end=" ")
 
-            # Load the processes to check based on whether oldworld or newworld
-            if which_world == 'newworld':
-                stats_list = stats_list_newworld
-            else:
-                stats_list = stats_list_oldworld
+            # This is where we interrogate the statistics.
 
             try:
                 # Using a list comprehension instead of a bunch of variables. Interrogate perf data.
                 line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
-                choicetemp = self.command_line_arguments()
+                # choicetemp = self.command_line_arguments()
 
                 if choicetemp.esf == 'esf':
                     line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
@@ -172,15 +185,23 @@ class PerfMonitor:
             print("File name: ", input_filename, " is empty. Maybe your last recording did not work ?")
             exit(2)
 
+        # Read file grab header and rest of file
         f = open(input_filename, 'rt')
         with f:
             reader = csv.reader(f)
-            for x_row in reader:
+            # Capture first row because of headers and strip out some cruft from the header
+            PerfMonitor.headers = next(f)
+            PerfMonitor.headers = PerfMonitor.headers.replace("\Process", "")
+            PerfMonitor.headers = PerfMonitor.headers.replace(" ", "")
+            PerfMonitor.headers = PerfMonitor.headers.split(",")  # Turn headers string into a list of headers
+            #print(PerfMonitor.headers)
+
+            for x_row in reader:  # Read in rest of data
                 PerfMonitor.data.append(x_row)
         f.close()
         return PerfMonitor.data
 
-    def data_plotter_oldworld(self):
+    def data_plotter(self):
         """Plot performance data from csv file using winstats library"""
         a = numpy.array(PerfMonitor.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
@@ -190,23 +211,8 @@ class PerfMonitor:
         total_elapsed_time = (len(a) / 60)   # (/60 to get hours)
         total_elapsed_time = round(total_elapsed_time, 2)
 
-        # Extract data from columns 2 to 7 and (convert to floats).
-        bgexaminer_private_bytes = a[:, 1]
-        bgexaminer_private_bytes = numpy.asfarray(bgexaminer_private_bytes, float)
-        bgexaminer_virtual_bytes = a[:, 2]
-        bgexaminer_virtual_bytes = numpy.asfarray(bgexaminer_virtual_bytes, float)
-        bgserver_private_bytes = a[:, 3]
-        bgserver_private_bytes = numpy.asfarray(bgserver_private_bytes, float)
-        bgserver_virtual_bytes = a[:, 4]
-        bgserver_virtual_bytes = numpy.asfarray(bgserver_virtual_bytes, float)
-        docauthapp_private_bytes = a[:, 5]
-        docauthapp_private_bytes = numpy.asfarray(docauthapp_private_bytes, float)
-        docauthapp_virtual_bytes = a[:, 6]
-        docauthapp_virtual_bytes = numpy.asfarray(docauthapp_virtual_bytes, float)
-        docauth_regulaservice_private_bytes = a[:, 7]
-        docauth_regulaservice_private_bytes = numpy.asfarray(docauth_regulaservice_private_bytes, float)
-        docauth_regulaservice_virtual_bytes = a[:, 8]
-        docauth_regulaservice_virtual_bytes = numpy.asfarray(docauth_regulaservice_virtual_bytes, float)
+        header_count = len(PerfMonitor.headers)
+        #print("Header count: ", header_count)
 
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
@@ -220,92 +226,25 @@ class PerfMonitor:
         ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
 
         # Plot the data
-        ax.plot(time_track, bgexaminer_private_bytes / 1000000, time_track, bgexaminer_virtual_bytes / 10000000,
-                time_track, bgserver_private_bytes / 1000000, time_track, bgserver_virtual_bytes / 1000000,
-                time_track, docauthapp_private_bytes / 1000000, time_track, docauthapp_virtual_bytes / 1000000,
-                time_track, docauth_regulaservice_private_bytes / 1000000, time_track, docauth_regulaservice_virtual_bytes / 1000000)
+
+        # Iterate through performance counters
+        j = 0  # Skip first column which contains times: a[:, 0], then plot all other data columns.
+        for i in PerfMonitor.headers:
+            j += 1
+            temp_stat = a[:, j]
+            temp_stat = numpy.asfarray(temp_stat, float)
+            ax.plot(time_track, temp_stat / 1000000)  # This plots a column of data at a time.
 
         ax.grid(True)
         ax.figure.autofmt_xdate()
-        ax.legend(['bgexaminer private', 'bgexaminer virtual', 'bgserver private', 'bgserver virtual',
-                   'docauth private', 'docauth virtual', 'regula private', 'regula virtual'])
+
+        # Print out legend automatically, cool!
+        ax.legend([i for i in PerfMonitor.headers])
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
         #fig.show()
         plt.show()
-        return
-
-    def data_plotter(self):
-        """Plot performance data from csv file using winstats library"""
-        a = numpy.array(PerfMonitor.data)
-        time_track = a[:, 0]  # Extract Timestamps (as string)
-
-        # Figure out how many hours worth of data came from the csv file
-        # total_elapsed_time = (len(a) / 2) / 60   # (/2 for 30 second interval the /60 to get hours)
-        total_elapsed_time = (len(a) / 60)   # (/60 to get hours)
-        total_elapsed_time = round(total_elapsed_time, 2)
-
-        # Extract data from columns 2 to 8 and (convert to floats).
-        idemia_app_private_bytes = a[:, 1]
-        idemia_app_private_bytes = numpy.asfarray(idemia_app_private_bytes, float)
-        idemia_app_virtual_bytes = a[:, 2]
-        idemia_app_virtual_bytes = numpy.asfarray(idemia_app_virtual_bytes, float)
-        idemia_regula_private_bytes = a[:, 3]
-        idemia_regula_private_bytes = numpy.asfarray(idemia_regula_private_bytes, float)
-        idemia_regula_virtual_bytes = a[:, 4]
-        idemia_regula_virtual_bytes = numpy.asfarray(idemia_regula_virtual_bytes, float)
-        idemia_linecode_private_bytes = a[:, 5]
-        idemia_linecode_private_bytes = numpy.asfarray(idemia_linecode_private_bytes, float)
-        idemia_linecode_virtual_bytes = a[:, 6]
-        idemia_linecode_virtual_bytes = numpy.asfarray(idemia_linecode_virtual_bytes, float)
-
-        # Output ESF data only if 'ESF' argument was given on commandline.
-        choicetemp = self.command_line_arguments()
-        if (choicetemp.esf == 'esf'):
-            idemia_esf_private_bytes = a[:, 7]
-            idemia_esf_private_bytes = numpy.asfarray(idemia_esf_private_bytes, float)
-            idemia_esf_virtual_bytes = a[:, 8]
-            idemia_esf_virtual_bytes = numpy.asfarray(idemia_esf_virtual_bytes, float)
-
-        # Create cartesian plane, draw labels and title
-        fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
-
-        # Build chart title and include number of hours that the test ran for.
-        chart_title = "Bricktest memory utilization ran for " + str(total_elapsed_time) + " hour(s)"
-        ax.set_title(chart_title)
-
-        ax.set_xlabel('Date/Time')
-        ax.set_ylabel('Memory in Gigabytes')
-        ax.xaxis.set_major_locator(plt.MaxNLocator(20))  # Display a max of 20 x-axis time ticks
-
-        # Plot the data only if 'ESF' argument was given on commandline.
-        if (choicetemp.esf == 'esf'):
-            ax.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000,
-                time_track, idemia_regula_private_bytes / 1000000000, time_track, idemia_regula_virtual_bytes / 1000000000,
-                time_track, idemia_linecode_private_bytes / 1000000000, time_track, idemia_linecode_virtual_bytes / 1000000000,
-                time_track, idemia_esf_private_bytes / 1000000000, time_track, idemia_esf_virtual_bytes / 1000000000)
-        else:
-            ax.plot(time_track, idemia_app_private_bytes / 1000000000, time_track, idemia_app_virtual_bytes / 1000000000,
-                time_track, idemia_regula_private_bytes / 1000000000, time_track, idemia_regula_virtual_bytes / 1000000000,
-                time_track, idemia_linecode_private_bytes / 1000000000, time_track, idemia_linecode_virtual_bytes / 1000000000)
-
-        # More grid preparations
-        ax.grid(True)
-        ax.figure.autofmt_xdate()
-
-        if (choicetemp.esf == 'esf'):  # Output proper chart legend with or without ESF.
-            ax.legend(['DocAuth private', 'DocAuth virtual', 'Regula private', 'Regula virtual',
-                   'Linecode private', 'Linecode virtual', 'ESF private', 'ESF virtual'])
-        else:
-            ax.legend(['DocAuth private', 'DocAuth virtual', 'Regula private', 'Regula virtual',
-                   'Linecode private', 'Linecode virtual'])
-
-        # Output the chart.  Really only needed if NOT in "interactive mode".
-        # If in non-interactive mode, may need to use "plt.show()" instead.
-        #fig.show()
-        plt.show()
-
         return
 
 # Run this bitch
@@ -323,15 +262,14 @@ def main():
         pm.data_collector("newworld")
     elif choice.action == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
-        pm.data_plotter_oldworld()
+        pm.data_plotter()
     elif choice.action == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
     elif choice.action == "all" and choice.world == "oldworld":
         pm.data_collector("oldworld")
-        # pm.file_reader_oldworld()
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
-        pm.data_plotter_oldworld()
+        pm.data_plotter()
     else:  # Assuming 'all' and 'newworld'
         pm.data_collector("newworld")
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
