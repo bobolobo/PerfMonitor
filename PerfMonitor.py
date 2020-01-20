@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import time
 import datetime as dt
 import re
+from tkinter import *
+import tkinter.ttk as ttk
 
 
 class PerfMonitor:
@@ -22,6 +24,7 @@ class PerfMonitor:
     monitored_pid = 0
     monitored_pid_counter = 0
     headers = []
+    reslist = list()
 
     def get_value(self, value):
         return float(value)
@@ -63,6 +66,37 @@ class PerfMonitor:
         tempstring = re.sub( r',,', ',', tempstring )  # Remove double commas
         tempstring = re.sub( r',$', '', tempstring )  # Remove Trailing comma
         return tempstring
+
+    def which_perf_columns(self):
+        """After querying user for which performance stats to plot, loads that data into data array."""
+        root = Tk()
+        root.title("Multiple Choice Listbox")
+        # root.geometry("60x20")
+        frame = ttk.Frame(root, padding=(6, 6, 12, 12))
+        frame.grid(column=0, row=0, sticky=(N, S, E, W))
+
+        perf_values = StringVar()
+        perf_values.set(PerfMonitor.headers)
+
+        perf_box = Listbox(frame, listvariable=perf_values, selectmode=MULTIPLE, width=60, height=20)
+        perf_box.grid(column=0, row=0, columnspan=1)
+
+        def select():
+            # self.reslist = list()
+            selection = perf_box.curselection()
+            for i in selection:
+                entrada = perf_box.get(i)
+                self.reslist.append(entrada)
+            for val in self.reslist:
+                print(val)
+
+        btn = ttk.Button(frame, text="Choices", command=select)
+        btn.grid(column=0, row=1, columnspan=1)
+
+        root.mainloop()
+
+        return
+
 
     def data_collector(self, which_world):
         """Collect performance via winstats library. Then write each line of data to csv file"""
@@ -194,7 +228,7 @@ class PerfMonitor:
             PerfMonitor.headers = PerfMonitor.headers.replace("\Process", "")
             PerfMonitor.headers = PerfMonitor.headers.replace(" ", "")
             PerfMonitor.headers = PerfMonitor.headers.split(",")  # Turn headers string into a list of headers
-            #print(PerfMonitor.headers)
+            # print(PerfMonitor.headers)
 
             for x_row in reader:  # Read in rest of data
                 PerfMonitor.data.append(x_row)
@@ -211,8 +245,12 @@ class PerfMonitor:
         total_elapsed_time = (len(a) / 60)   # (/60 to get hours)
         total_elapsed_time = round(total_elapsed_time, 2)
 
-        header_count = len(PerfMonitor.headers)
-        #print("Header count: ", header_count)
+        # Ask user which data to plot
+        self.which_perf_columns()
+        print("from sub:", self.reslist)
+
+        # header_count = len(PerfMonitor.headers)
+        # print("Header count: ", header_count)
 
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
@@ -229,11 +267,13 @@ class PerfMonitor:
 
         # Iterate through performance counters
         j = 0  # Skip first column which contains times: a[:, 0], then plot all other data columns.
-        for i in PerfMonitor.headers:
-            j += 1
-            temp_stat = a[:, j]
-            temp_stat = numpy.asfarray(temp_stat, float)
-            ax.plot(time_track, temp_stat / 1000000)  # This plots a column of data at a time.
+        for i in PerfMonitor.headers:  # Walk through all available stats from csv file.
+            j += 1                     # Index for what perf stat to report.
+            for k in self.reslist:     # Walk through user's choices.
+                if k == i:             # If match then output the perf stat the user is requesting.
+                    temp_stat = a[:, j]
+                    temp_stat = numpy.asfarray(temp_stat, float)
+                    ax.plot(time_track, temp_stat / 1000000)  # This plots a column of data at a time.
 
         ax.grid(True)
         ax.figure.autofmt_xdate()
