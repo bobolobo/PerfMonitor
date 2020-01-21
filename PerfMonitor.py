@@ -45,16 +45,40 @@ class PerfMonitor:
     def command_line_arguments(self):
         """Read and evaluate commandline arguments, returns the single commandline argument"""
         try:
-            parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
+            """parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
             parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
             parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
             parser.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser.add_argument('hours', type=int, help='number of hours')
-            args = parser.parse_args()
+            args = parser.parse_args()"""
 
-            self.time_max_ticks = args.hours * 60  # mult by 60 because every 60 seconds a measure is taken. Once a min.
+            parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
+            # parser.add_argument('action', choices=['record', 'report'], type=str, help='record | report')
+            subparsers = parser.add_subparsers(dest='subcommand')
 
-            return args
+            # Subparser for "Report".
+            parser_report = subparsers.add_parser('report')
+            # Add a required argument.
+            # parser_report.add_argument('action', choices=['record', 'report'], type=str, help='record | report')
+            parser_report.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
+
+            # Subparser for "Record".
+            parser_record = subparsers.add_parser('record')
+            # Add required arguments.
+            # parser_report.add_argument( 'action', choices=['record', 'report'], type=str, help='record | report' )
+            parser_record.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
+            parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf' )
+            parser_record.add_argument('hours', type=int, help='number of hours' )
+
+            self.args = parser.parse_args()
+            print("args: ", self.args)
+            print("args.subcommand: ", self.args.subcommand)
+
+            # exit(2)
+
+            self.time_max_ticks = self.args.hours * 60  # mult by 60 because every 60 seconds a measure is taken. Once a min.
+
+            return
         except Exception as err:
             print(err)
             return
@@ -98,7 +122,6 @@ class PerfMonitor:
         root.mainloop()
 
         return
-
 
     def data_collector(self, which_world):
         """Collect performance via winstats library. Then write each line of data to csv file"""
@@ -295,26 +318,30 @@ def main():
 
     pm = PerfMonitor()
 
-    choice = pm.command_line_arguments()
+    #choice = pm.command_line_arguments()  # Be nice to know why this would not work?
+    pm.command_line_arguments()
+    choice = pm.args  # Using this global which i would like to get as a return from command_line_augments() instead.
 
-    if choice.action == "record" and choice.world == "oldworld":
+    print("Choice: ", choice)
+
+    if choice.subcommand == "record" and choice.world == "oldworld":
         pm.data_collector("oldworld")
-    elif choice.action == "record" and choice.world == "newworld":
+    elif choice.subcommand == "record" and choice.world == "newworld":
         pm.data_collector("newworld")
-    elif choice.action == "report" and choice.world == "oldworld":
+    elif choice.subcommand == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter()
-    elif choice.action == "report" and choice.world == "newworld":
+    elif choice.subcommand == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
-    elif choice.action == "all" and choice.world == "oldworld":
+"""    elif choice.subcommand == "all" and choice.world == "oldworld":
         pm.data_collector("oldworld")
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter()
     else:  # Assuming 'all' and 'newworld'
         pm.data_collector("newworld")
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
-        pm.data_plotter()
+        pm.data_plotter()"""
 
 
 if __name__ == "__main__":
