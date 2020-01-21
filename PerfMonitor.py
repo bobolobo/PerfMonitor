@@ -89,6 +89,8 @@ class PerfMonitor:
                 self.reslist.append(entrada)
             for val in self.reslist:
                 print(val)
+                # perf_box.grid_forget()
+            root.destroy()  # Destroy the GUI after selections made.
 
         btn = ttk.Button(frame, text="Choices", command=select)
         btn.grid(column=0, row=1, columnspan=1)
@@ -247,7 +249,6 @@ class PerfMonitor:
 
         # Ask user which data to plot
         self.which_perf_columns()
-        print("from sub:", self.reslist)
 
         # header_count = len(PerfMonitor.headers)
         # print("Header count: ", header_count)
@@ -266,10 +267,10 @@ class PerfMonitor:
         # Plot the data
 
         # Iterate through performance counters
-        j = 0  # Skip first column which contains times: a[:, 0], then plot all other data columns.
-        for i in PerfMonitor.headers:  # Walk through all available stats from csv file.
+        j = 0  # Skip first column which contains times: a[:, 0], then plot all other data columns as user requests.
+        for i in PerfMonitor.headers:  # Walk through ALL available stats from csv file.
             j += 1                     # Index for what perf stat to report.
-            for k in self.reslist:     # Walk through user's choices.
+            for k in self.reslist:     # Walk through user's choices, compare to what is available.
                 if k == i:             # If match then output the perf stat the user is requesting.
                     temp_stat = a[:, j]
                     temp_stat = numpy.asfarray(temp_stat, float)
@@ -279,7 +280,7 @@ class PerfMonitor:
         ax.figure.autofmt_xdate()
 
         # Print out legend automatically, cool!
-        ax.legend([i for i in PerfMonitor.headers])
+        ax.legend([i for i in PerfMonitor.reslist])
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
