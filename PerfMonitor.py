@@ -16,7 +16,7 @@ import tkinter.ttk as ttk
 
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
-    args = ''
+    # args = ''
     data = []
     time_measure_seconds = 60  # Number of seconds between consecutive data captures.
     time_max_ticks = 0  # Will be computed from the "hours" argument in the command line.
@@ -44,41 +44,33 @@ class PerfMonitor:
 
     def command_line_arguments(self):
         """Read and evaluate commandline arguments, returns the single commandline argument"""
-        try:
-            """parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
-            parser.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
-            parser.add_argument('action', choices=['record', 'report', 'all'], type=str, help='record | report | all')
-            parser.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
-            parser.add_argument('hours', type=int, help='number of hours')
-            args = parser.parse_args()"""
 
+        try:
             parser = argparse.ArgumentParser(description='Performance Monitoring for Idemia DocAuth')
-            # parser.add_argument('action', choices=['record', 'report'], type=str, help='record | report')
             subparsers = parser.add_subparsers(dest='subcommand')
 
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            # parser_report.add_argument('action', choices=['record', 'report'], type=str, help='record | report')
             parser_report.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            # parser_report.add_argument( 'action', choices=['record', 'report'], type=str, help='record | report' )
             parser_record.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf' )
             parser_record.add_argument('hours', type=int, help='number of hours' )
 
-            self.args = parser.parse_args()
-            print("args: ", self.args)
-            print("args.subcommand: ", self.args.subcommand)
+            # Debugging purposes
+            args = parser.parse_args()
+            print("args: ", args)
+            print("args.subcommand: ", args.subcommand)
 
-            # exit(2)
+            if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
+                self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
 
-            self.time_max_ticks = self.args.hours * 60  # mult by 60 because every 60 seconds a measure is taken. Once a min.
+            return args
 
-            return
         except Exception as err:
             print(err)
             return
@@ -307,7 +299,7 @@ class PerfMonitor:
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
-        #fig.show()
+        # fig.show()
         plt.show()
         return
 
@@ -318,9 +310,11 @@ def main():
 
     pm = PerfMonitor()
 
-    #choice = pm.command_line_arguments()  # Be nice to know why this would not work?
-    pm.command_line_arguments()
-    choice = pm.args  # Using this global which i would like to get as a return from command_line_augments() instead.
+    choice = pm.command_line_arguments()
+
+    # Debugging
+    # pm.command_line_arguments()
+    # choice = pm.args  # Using this global which i would like to get as a return from command_line_augments() instead.
 
     print("Choice: ", choice)
 
@@ -334,14 +328,6 @@ def main():
     elif choice.subcommand == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
         pm.data_plotter()
-"""    elif choice.subcommand == "all" and choice.world == "oldworld":
-        pm.data_collector("oldworld")
-        pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
-        pm.data_plotter()
-    else:  # Assuming 'all' and 'newworld'
-        pm.data_collector("newworld")
-        pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
-        pm.data_plotter()"""
 
 
 if __name__ == "__main__":
