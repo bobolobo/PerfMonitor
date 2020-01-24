@@ -58,13 +58,11 @@ class PerfMonitor:
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
             parser_record.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
-            parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf' )
-            parser_record.add_argument('hours', type=int, help='number of hours' )
+            parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
+            parser_record.add_argument('hours', type=int, help='number of hours')
 
-            # Debugging purposes
+            # Parse the arguments
             args = parser.parse_args()
-            print("args: ", args)
-            print("args.subcommand: ", args.subcommand)
 
             if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
@@ -78,15 +76,15 @@ class PerfMonitor:
     def string_cleaner(self, temp_string_buffer):
         """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
         # Strip brackets, single quotes, parens from buffer. Matplotlib seems to handover data with commas at the end.
-        tempstring = (str(temp_string_buffer).translate(str.maketrans( {'[': '', ']': '', '\'': '', ')': '', '(': ''})))
-        tempstring = re.sub( r',,', ',', tempstring )  # Remove double commas
-        tempstring = re.sub( r',$', '', tempstring )  # Remove Trailing comma
+        tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
+        tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
+        tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
         return tempstring
 
     def which_perf_columns(self):
         """After querying user for which performance stats to plot, loads that data into data array."""
         root = Tk()
-        root.title("Multiple Choice Listbox")
+        root.title("Select performance statistics to display")
         # root.geometry("60x20")
         frame = ttk.Frame(root, padding=(6, 6, 12, 12))
         frame.grid(column=0, row=0, sticky=(N, S, E, W))
@@ -97,8 +95,7 @@ class PerfMonitor:
         perf_box = Listbox(frame, listvariable=perf_values, selectmode=MULTIPLE, width=60, height=20)
         perf_box.grid(column=0, row=0, columnspan=1)
 
-        def select():
-            # self.reslist = list()
+        def select():  # Called by Button press
             selection = perf_box.curselection()
             for i in selection:
                 entrada = perf_box.get(i)
@@ -108,7 +105,7 @@ class PerfMonitor:
                 # perf_box.grid_forget()
             root.destroy()  # Destroy the GUI after selections made.
 
-        btn = ttk.Button(frame, text="Choices", command=select)
+        btn = ttk.Button(frame, text="Display Chart", command=select)
         btn.grid(column=0, row=1, columnspan=1)
 
         root.mainloop()
@@ -142,20 +139,22 @@ class PerfMonitor:
         # Run through ticks (time) for x-axis.
 
         stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
-                      r'\Process(BGExaminer)\Virtual Bytes',
-                      r'\Process(bgServer)\Private Bytes',
-                      r'\Process(bgServer)\Virtual Bytes',
-                      r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
-                      r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes']
+                               r'\Process(BGExaminer)\Virtual Bytes',
+                               r'\Process(bgServer)\Private Bytes',
+                               r'\Process(bgServer)\Virtual Bytes',
+                               r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
+                               r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
+                               r'\Process(DataAnalysisApiHost)\Private Bytes',
+                               r'\Process(DataAnalysisApiHost)\Virtual Bytes']
 
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
-                      r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
-                      r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
-                      r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes',
-                      r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes']
+                               r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
+                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes',
+                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes']
 
         stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes']
@@ -245,7 +244,6 @@ class PerfMonitor:
             PerfMonitor.headers = PerfMonitor.headers.replace("\Process", "")
             PerfMonitor.headers = PerfMonitor.headers.replace(" ", "")
             PerfMonitor.headers = PerfMonitor.headers.split(",")  # Turn headers string into a list of headers
-            # print(PerfMonitor.headers)
 
             for x_row in reader:  # Read in rest of data
                 PerfMonitor.data.append(x_row)
@@ -264,9 +262,6 @@ class PerfMonitor:
 
         # Ask user which data to plot
         self.which_perf_columns()
-
-        # header_count = len(PerfMonitor.headers)
-        # print("Header count: ", header_count)
 
         # Create cartesian plane, draw labels and title
         fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
