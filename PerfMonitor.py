@@ -90,7 +90,7 @@ class PerfMonitor:
         frame.grid(column=0, row=0, sticky=(N, S, E, W))
 
         perf_values = StringVar()
-        perf_values.set(PerfMonitor.headers)
+        perf_values.set(self.headers)
 
         perf_box = Listbox(frame, listvariable=perf_values, selectmode=MULTIPLE, width=60, height=20)
         perf_box.grid(column=0, row=0, columnspan=1)
@@ -240,19 +240,19 @@ class PerfMonitor:
         with f:
             reader = csv.reader(f)
             # Capture first row because of headers and strip out some cruft from the header
-            PerfMonitor.headers = next(f)
-            PerfMonitor.headers = PerfMonitor.headers.replace("\Process", "")
-            PerfMonitor.headers = PerfMonitor.headers.replace(" ", "")
-            PerfMonitor.headers = PerfMonitor.headers.split(",")  # Turn headers string into a list of headers
+            self.headers = next(f)
+            self.headers = self.headers.replace("\Process", "")
+            self.headers = self.headers.replace(" ", "")
+            self.headers = self.headers.split(",")  # Turn headers string into a list of headers
 
             for x_row in reader:  # Read in rest of data
-                PerfMonitor.data.append(x_row)
+                self.data.append(x_row)
         f.close()
-        return PerfMonitor.data
+        return self.data
 
     def data_plotter(self):
         """Plot performance data from csv file using winstats library"""
-        a = numpy.array(PerfMonitor.data)
+        a = numpy.array(self.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
         # Figure out how many hours worth of data came from the csv file
@@ -278,7 +278,7 @@ class PerfMonitor:
 
         # Iterate through performance counters
         j = 0  # Skip first column which contains times: a[:, 0], then plot all other data columns as user requests.
-        for i in PerfMonitor.headers:  # Walk through ALL available stats from csv file.
+        for i in self.headers:  # Walk through ALL available stats from csv file.
             j += 1                     # Index for what perf stat to report.
             for k in self.reslist:     # Walk through user's choices, compare to what is available.
                 if k == i:             # If match then output the perf stat the user is requesting.
@@ -290,7 +290,7 @@ class PerfMonitor:
         ax.figure.autofmt_xdate()
 
         # Print out legend automatically, cool!
-        ax.legend([i for i in PerfMonitor.reslist])
+        ax.legend([i for i in self.reslist])
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
