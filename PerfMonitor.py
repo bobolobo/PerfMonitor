@@ -9,6 +9,7 @@ import numpy
 import matplotlib.pyplot as plt
 import time
 import datetime as dt
+# noinspection PyUnresolvedReferences
 import re
 from tkinter import *
 import tkinter.ttk as ttk
@@ -73,13 +74,21 @@ class PerfMonitor:
             print(err)
             return
 
-    def string_cleaner(self, temp_string_buffer):
+    def string_cleaner(self, what_to_do, temp_string_buffer):
         """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
-        # Strip brackets, single quotes, parens from buffer. Matplotlib seems to handover data with commas at the end.
-        tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
-        tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
-        tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
-        return tempstring
+
+        if what_to_do == "header":
+            # Capture first row because of headers and strip out some cruft from the header
+            tempstring = temp_string_buffer.replace("\Process", "")
+            tempstring = tempstring.replace(" ", "")  # Replace space with no_space
+            tempstring = tempstring.split(",")  # Turn headers string into a list of headers
+            return tempstring
+        elif what_to_do == "data":
+            # Strip brackets, single quotes, parens from buffer. Matplotlib seems to handover data with commas at the end.
+            tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
+            tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
+            tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
+            return tempstring
 
     def which_perf_columns(self):
         """After querying user for which performance stats to plot, loads that data into data array."""
@@ -171,10 +180,10 @@ class PerfMonitor:
         # Write header file to csv containing name of all perf stats being tracked.
         if choicetemp.esf == 'esf':
             # Write the perf names to the csv file including ESF stats.
-            writer.writerow((stats_list + stats_list_esf))
+            writer.writerow(stats_list + stats_list_esf)
         else:
             # Write perf names to the csv file NOT including ESF stats.
-            writer.writerow((stats_list))
+            writer.writerow(stats_list)
 
         for ticks in range(self.time_max_ticks):  # 1440 = 12 hours for 30 second tick | 4320 = 36 hours
 
@@ -195,10 +204,10 @@ class PerfMonitor:
                     line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
 
                     # Write a row of stats to the csv file including ESF stats.
-                    writer.writerow((time_track, self.string_cleaner(line_of_data), self.string_cleaner(line_of_data_esf)))
+                    writer.writerow((time_track, self.string_cleaner("data", line_of_data), self.string_cleaner("data", line_of_data_esf)))
                 else:
                     # Write a row of stats to the csv file NOT including ESF stats.
-                    writer.writerow((time_track, self.string_cleaner(line_of_data)))
+                    writer.writerow((time_track, self.string_cleaner("data", line_of_data)))
 
                 # Output test status to console.
                 print(" tick:", ticks, "of", self.time_max_ticks, " name:", self.monitored_process_name, " pid:",
@@ -241,9 +250,10 @@ class PerfMonitor:
             reader = csv.reader(f)
             # Capture first row because of headers and strip out some cruft from the header
             self.headers = next(f)
-            self.headers = self.headers.replace("\Process", "")
-            self.headers = self.headers.replace(" ", "")
-            self.headers = self.headers.split(",")  # Turn headers string into a list of headers
+            # self.headers = self.headers.replace("\Process", "")
+            # self.headers = self.headers.replace(" ", "")  # Replace space with no_space
+            # self.headers = self.headers.split(",")  # Turn headers string into a list of headers
+            self.headers = self.string_cleaner("header", self.headers)  # Clean the header, strip some characters and spaces
 
             for x_row in reader:  # Read in rest of data
                 self.data.append(x_row)
