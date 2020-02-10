@@ -53,12 +53,14 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
+            parser_report.add_argument('world', choices=['oldworld', 'newworld', 'catcworld'],
+                                       type=str, help='oldworld, newworld, or catcworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['oldworld', 'newworld'], type=str, help='oldworld or newworld')
+            parser_record.add_argument('world', choices=['oldworld', 'newworld', 'catcworld'],
+                                       type=str, help='oldworld, newworld, or catcworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -141,6 +143,13 @@ class PerfMonitor:
             output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'catcworld':
+            if not self.process_checker('ECAT.exe'):
+                print("ECAT is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_CatcWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
         print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
         print("CTRL-C to stop recording earlier.")
@@ -158,6 +167,13 @@ class PerfMonitor:
                                r'\Process(DataAnalysisApiHost)\Private Bytes',
                                r'\Process(DataAnalysisApiHost)\Virtual Bytes']
 
+        stats_list_catcworld = [r'\Process(BGExaminer)\Private Bytes',
+                               r'\Process(BGExaminer)\Virtual Bytes',
+                               r'\Process(bgServer)\Private Bytes',
+                               r'\Process(bgServer)\Virtual Bytes',
+                               r'\Process(ECAT)\Private Bytes',
+                               r'\Process(ECAT)\Virtual Bytes']
+
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
                                r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
@@ -168,9 +184,11 @@ class PerfMonitor:
         stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes']
 
-        # Load the processes to check based on whether oldworld or newworld
+        # Load the processes to check based on whether oldworld, newworld, catcworld
         if which_world == 'newworld':
             stats_list = stats_list_newworld
+        elif which_world == 'catcworld':
+            stats_list = stats_list_catcworld
         else:
             stats_list = stats_list_oldworld
 
@@ -327,11 +345,16 @@ def main():
         pm.data_collector("oldworld")
     elif choice.subcommand == "record" and choice.world == "newworld":
         pm.data_collector("newworld")
+    elif choice.subcommand == "record" and choice.world == "catcworld":
+        pm.data_collector("catcworld")
     elif choice.subcommand == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "catcworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_CatcWorld.csv")
         pm.data_plotter()
 
 
