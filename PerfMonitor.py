@@ -17,6 +17,7 @@ import tkinter.ttk as ttk
 
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
+
     # args = ''
     data = []
     time_measure_seconds = 60  # Number of seconds between consecutive data captures.
@@ -32,6 +33,7 @@ class PerfMonitor:
 
     def process_checker(self, process_to_monitor):
         """Verify that some IDEMIA... processes are running"""
+
         for p in psutil.process_iter():
             if process_to_monitor in p.name():
                 if self.monitored_pid == 0:  # If this is the first time through, capture the name and pid.
@@ -94,6 +96,7 @@ class PerfMonitor:
 
     def which_perf_columns(self):
         """After querying user for which performance stats to plot, loads that data into data array."""
+
         root = Tk()
         root.title("Select performance statistics to display")
         # root.geometry("60x20")
@@ -129,22 +132,26 @@ class PerfMonitor:
         choicetemp = self.command_line_arguments()
 
         # Verify that DocAuth IS running, and assign csv filename based on old vs new world
+
         if which_world == 'newworld':
-            if not self.process_checker('IDEMIA.DocAuth.Document.App.exe'):
+            process_name_to_monitor = 'IDEMIA.DocAuth.Document.App.exe'
+            if not self.process_checker(process_name_to_monitor):
                 print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'oldworld':
-            if not self.process_checker('DocAuth.Applications.Authenticate.exe'):
+            process_name_to_monitor = 'DocAuth.Applications.Authenticate.exe'
+            if not self.process_checker(process_name_to_monitor):
                 print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
-            if not self.process_checker('ECAT.exe'):
+            process_name_to_monitor = 'ECAT.exe'
+            if not self.process_checker(process_name_to_monitor):
                 print("ECAT is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_CatcWorld.csv'
@@ -232,7 +239,7 @@ class PerfMonitor:
                       self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
 
                 # See if the DocAuth service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker('IDEMIA.DocAuth.Document.App.exe')
+                self.process_checker(process_name_to_monitor)
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
@@ -271,7 +278,7 @@ class PerfMonitor:
             # self.headers = self.headers.replace("\Process", "")
             # self.headers = self.headers.replace(" ", "")  # Replace space with no_space
             # self.headers = self.headers.split(",")  # Turn headers string into a list of headers
-            self.headers = self.string_cleaner("header", self.headers)  # Clean the header, strip some characters and spaces
+            self.headers = self.string_cleaner("header", self.headers)  # Clean header, strip some characters and spaces
 
             for x_row in reader:  # Read in rest of data
                 self.data.append(x_row)
@@ -280,6 +287,7 @@ class PerfMonitor:
 
     def data_plotter(self):
         """Plot performance data from csv file using winstats library"""
+
         a = numpy.array(self.data)
         time_track = a[:, 0]  # Extract Timestamps (as string)
 
