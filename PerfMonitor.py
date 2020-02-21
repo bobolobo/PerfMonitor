@@ -28,9 +28,6 @@ class PerfMonitor:
     headers = []
     reslist = list()
 
-    def get_value(self, value):
-        return float(value)
-
     def process_checker(self, process_to_monitor):
         """Verify that some IDEMIA... processes are running"""
 
@@ -88,7 +85,7 @@ class PerfMonitor:
             tempstring = tempstring.split(",")  # Turn headers string into a list of headers
             return tempstring
         elif what_to_do == "data":
-            # Strip brackets, single quotes, parens from buffer. Matplotlib seems to handover data with commas at the end.
+            # Strip brackets, single quotes, parens from buffer. Matplotlib seems to send data with commas at the end.
             tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
             tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
             tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
@@ -126,12 +123,7 @@ class PerfMonitor:
 
         return
 
-    def data_collector(self, which_world):
-        """Collect performance via winstats library. Then write each line of data to csv file"""
-
-        choicetemp = self.command_line_arguments()
-
-        # Verify that DocAuth IS running, and assign csv filename based on old vs new world
+    def process_to_monitor(self, which_world):
 
         if which_world == 'newworld':
             process_name_to_monitor = 'IDEMIA.DocAuth.Document.App.exe'
@@ -158,6 +150,17 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
+        return f, writer, output_filename
+
+    def data_collector(self, which_world):
+        """Collect performance via winstats library. Then write each line of data to csv file"""
+
+        choicetemp = self.command_line_arguments()
+
+        # Verify that DocAuth IS running, and assign csv filename based on old vs new world
+
+        f, writer, output_filename = self.process_to_monitor(which_world)
+
         print("\nVerified that DocAuth IS running. Recording data for ", choicetemp.hours, " hours...")
         print("CTRL-C to stop recording earlier.")
 
@@ -175,11 +178,11 @@ class PerfMonitor:
                                r'\Process(DataAnalysisApiHost)\Virtual Bytes']
 
         stats_list_catcworld = [r'\Process(BGExaminer)\Private Bytes',
-                               r'\Process(BGExaminer)\Virtual Bytes',
-                               r'\Process(bgServer)\Private Bytes',
-                               r'\Process(bgServer)\Virtual Bytes',
-                               r'\Process(ECAT)\Private Bytes',
-                               r'\Process(ECAT)\Virtual Bytes']
+                                r'\Process(BGExaminer)\Virtual Bytes',
+                                r'\Process(bgServer)\Private Bytes',
+                                r'\Process(bgServer)\Virtual Bytes',
+                                r'\Process(ECAT)\Private Bytes',
+                                r'\Process(ECAT)\Virtual Bytes']
 
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
@@ -196,11 +199,10 @@ class PerfMonitor:
             stats_list = stats_list_newworld
         elif which_world == 'catcworld':
             stats_list = stats_list_catcworld
-        else:
+        else:  # oldworld
             stats_list = stats_list_oldworld
 
         # Capture ESF data only if 'ESF' argument was given on commandline.
-        choicetemp = self.command_line_arguments()
 
         # Write header file to csv containing name of all perf stats being tracked.
         if choicetemp.esf == 'esf':
@@ -229,7 +231,8 @@ class PerfMonitor:
                     line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
 
                     # Write a row of stats to the csv file including ESF stats.
-                    writer.writerow((time_track, self.string_cleaner("data", line_of_data), self.string_cleaner("data", line_of_data_esf)))
+                    writer.writerow((time_track, self.string_cleaner("data", line_of_data),
+                                     self.string_cleaner("data", line_of_data_esf)))
                 else:
                     # Write a row of stats to the csv file NOT including ESF stats.
                     writer.writerow((time_track, self.string_cleaner("data", line_of_data)))
@@ -239,7 +242,7 @@ class PerfMonitor:
                       self.monitored_pid, ", was restarted ", self.monitored_pid_counter, " times.")
 
                 # See if the DocAuth service has restarted. IF there is a new pid, then it did restart.
-                self.process_checker(process_name_to_monitor)
+                self.process_checker(self.monitored_process_name)
 
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
