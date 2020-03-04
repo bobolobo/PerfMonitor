@@ -142,7 +142,7 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
-            process_name_to_monitor = 'ECAT.exe'
+            process_name_to_monitor = 'APP.exe'
             if not self.process_checker(process_name_to_monitor):
                 print("ECAT is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
@@ -166,49 +166,69 @@ class PerfMonitor:
 
         # Run through ticks (time) for x-axis.
 
-        stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
+        stats_list_oldworld = [r'\Process(BGExaminer)\Working Set',
                                r'\Process(BGExaminer)\Virtual Bytes',
-                               r'\Process(bgServer)\Private Bytes',
+                               r'\Process(BGExaminer)\Working Set - Private',
+                               r'\Process(bgServer)\Working Set',
                                r'\Process(bgServer)\Virtual Bytes',
-                               r'\Process(DocAuth.Applications.Authenticate)\Private Bytes',
+                               r'\Process(bgServer)\Working Set - Private',
+                               r'\Process(DocAuth.Applications.Authenticate)\Working Set',
                                r'\Process(DocAuth.Applications.Authenticate)\Virtual Bytes',
-                               r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                               r'\Process(DocAuth.Applications.Authenticate)\Working Set - Private',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set',
                                r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
-                               r'\Process(DataAnalysisApiHost)\Private Bytes',
-                               r'\Process(DataAnalysisApiHost)\Virtual Bytes']
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set - Private',
+                               r'\Process(DataAnalysisApiHost)\Working Set',
+                               r'\Process(DataAnalysisApiHost)\Virtual Bytes',
+                               r'\Process(DataAnalysisApiHost)\Working Set - Private']
 
-        stats_list_catcworld = [r'\Process(BGExaminer)\Private Bytes',
+        stats_list_catcworld = [r'\Process(BGExaminer)\Working Set',
                                 r'\Process(BGExaminer)\Virtual Bytes',
-                                r'\Process(bgServer)\Private Bytes',
+                                r'\Process(BGExaminer)\Working Set - Private',
+                                r'\Process(bgServer)\Working Set',
                                 r'\Process(bgServer)\Virtual Bytes',
-                                r'\Process(ECAT)\Private Bytes',
+                                r'\Process(bgServer)\Working Set - Private',
+                                r'\Process(ECAT)\Working Set',
                                 r'\Process(ECAT)\Virtual Bytes',
-                                r'\Process(node#1)\Private Bytes',
+                                r'\Process(ECAT)\Working Set - Private',
+                                r'\Process(node#1)\Working Set',
                                 r'\Process(node#1)\Virtual Bytes',
-                                r'\Process(node)\Private Bytes',
+                                r'\Process(node#1)\Working Set - Private',
+                                r'\Process(node)\Working Set',
                                 r'\Process(node)\Virtual Bytes',
-                                r'\Process(java#1)\Private Bytes',
+                                r'\Process(node)\Working Set - Private',
+                                r'\Process(java#1)\Working Set',
                                 r'\Process(java#1)\Virtual Bytes',
-                                r'\Process(java)\Private Bytes',
+                                r'\Process(java#1)\Working Set - Private',
+                                r'\Process(java)\Working Set',
                                 r'\Process(java)\Virtual Bytes',
-                                r'\Process(FlirTcpClient#1)\Private Bytes',
+                                r'\Process(java)\Working Set - Private',
+                                r'\Process(FlirTcpClient#1)\Working Set',
                                 r'\Process(FlirTcpClient#1)\Virtual Bytes',
-                                r'\Process(FlirTcpClient)\Private Bytes',
+                                r'\Process(FlirTcpClient#1)\Working Set - Private',
+                                r'\Process(FlirTcpClient)\Working Set',
                                 r'\Process(FlirTcpClient)\Virtual Bytes',
-                                r'\Process(audiodg)\Private Bytes',
-                                r'\Process(audiodg)\Virtual Bytes',
-                                r'\Process(APP)\Private Bytes',
-                                r'\Process(APP)\Virtual Bytes']
+                                r'\Process(FlirTcpClient)\Working Set - Private',
+                                r'\Process(APP)\Working Set',
+                                r'\Process(APP)\Virtual Bytes',
+                                r'\Process(APP)\Working Set - Private',
+                                r'\Process(IS)\Working Set',
+                                r'\Process(IS)\Virtual Bytes',
+                                r'\Process(IS)\Working Set - Private']
 
-        stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
+        stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Working Set',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
-                               r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                               r'\Process(IDEMIA.DocAuth.Document.App)\Working Set - Private',
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set',
                                r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
-                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Private Bytes',
-                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes']
+                               r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set - Private',
+                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Working Set',
+                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes',
+                               r'\Process(IDEMIA.DocAuth.LinecodeService)\Working Set - Private']
 
-        stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
-                          r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes']
+        stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Working Set',
+                          r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes',
+                          r'\Process(IDEMIA.DocAuth.ESFService)\Working Set - Private']
 
         # Load the processes to check based on whether oldworld, newworld, catcworld
         if which_world == 'newworld':
