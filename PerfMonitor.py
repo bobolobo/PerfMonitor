@@ -18,7 +18,6 @@ import tkinter.ttk as ttk
 class PerfMonitor:
     """Performance Monitoring for Idemia DocAuth"""
 
-    # args = ''
     data = []
     time_measure_seconds = 60  # Number of seconds between consecutive data captures.
     time_max_ticks = 0  # Will be computed from the "hours" argument in the command line.
@@ -68,6 +67,9 @@ class PerfMonitor:
 
             if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
+
+            if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor. Reset to no monitor.
+                args.esf = 'noesf'
 
             return args
 
@@ -144,7 +146,7 @@ class PerfMonitor:
         elif which_world == 'catcworld':
             process_name_to_monitor = 'APP.exe'
             if not self.process_checker(process_name_to_monitor):
-                print("ECAT is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
+                print("APP.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_CatcWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
