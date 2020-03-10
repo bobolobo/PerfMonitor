@@ -1,18 +1,24 @@
+"""Python-based Performance Monitor which mimics Windows built-in Perfmon, only better :)
+
+It also monitors certain processes to watch how many times (hopefully none) they restart.
+We collect all product performance stats but give the User a graphic option to pick the actual stats to report on.
+
+To run need to install psutil, numpy, mathplotlib, and winstats python libraries. --Regards, BoboLobo"""
+
 import sys
 from sys import exit, argv  # Have to specific import these so packaging/freezing works
 import os.path
 import argparse
-import psutil
 import csv
+import time
+import datetime as dt
+from tkinter import Tk, N, S, E, W, StringVar, Listbox, MULTIPLE
+import tkinter.ttk as ttk
+import re
+import psutil
 import winstats
 import numpy
 import matplotlib.pyplot as plt
-import time
-import datetime as dt
-# noinspection PyUnresolvedReferences
-import re
-from tkinter import *
-import tkinter.ttk as ttk
 
 
 class PerfMonitor:
@@ -75,23 +81,24 @@ class PerfMonitor:
 
         except Exception as err:
             print(err)
-            return
+
+            return args
+
 
     def string_cleaner(self, what_to_do, temp_string_buffer):
         """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
 
         if what_to_do == "header":
             # Capture first row because of headers and strip out some cruft from the header
-            tempstring = temp_string_buffer.replace("\Process", "")
+            tempstring = temp_string_buffer.replace(r"\Process", "")
             tempstring = tempstring.replace(" ", "")  # Replace space with no_space
             tempstring = tempstring.split(",")  # Turn headers string into a list of headers
-            return tempstring
         elif what_to_do == "data":
             # Strip brackets, single quotes, parens from buffer. Matplotlib seems to send data with commas at the end.
             tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
             tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
             tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
-            return tempstring
+        return tempstring
 
     def which_perf_columns(self):
         """After querying user for which performance stats to plot, loads that data into data array."""
@@ -109,6 +116,7 @@ class PerfMonitor:
         perf_box.grid(column=0, row=0, columnspan=1)
 
         def select():  # Called by Button press
+            """Tk-related function for GUI use."""
             selection = perf_box.curselection()
             for i in selection:
                 entrada = perf_box.get(i)
@@ -123,9 +131,8 @@ class PerfMonitor:
 
         root.mainloop()
 
-        return
-
     def process_to_monitor(self, which_world):
+        """This picks which process to monitor based on WORLD arg."""
 
         if which_world == 'newworld':
             process_name_to_monitor = 'IDEMIA.DocAuth.Document.App.exe'
@@ -285,7 +292,7 @@ class PerfMonitor:
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
             except WindowsError as error:  # Processes down? Winstat errors out, so handle it. Continue the loop.
-                print(f"One of the processes was not available for interrogation by winstat.. Regula? :)")
+                print(f"One of the processes was not available for interrogation:", error)
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
 
             except KeyboardInterrupt as error:  # On ctrl-c from keyboard, flush buffer, close file, exit. Break loop.
@@ -297,8 +304,6 @@ class PerfMonitor:
         # Print out how many times Regula service was restarted
         print("\nData was collected and stored in file: ", output_filename)
         print(self.monitored_process_name, " was restarted ", self.monitored_pid_counter, " times.")
-
-        return
 
     def file_reader(self, input_filename):
         """Read in csv performance file, line by line"""
@@ -341,7 +346,7 @@ class PerfMonitor:
         self.which_perf_columns()
 
         # Create cartesian plane, draw labels and title
-        fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart
+        _fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart. Figure is a dummy var.
 
         # Build chart title and include number of hours that the test ran for.
         chart_title = "Bricktest memory utilization ran for " + str(total_elapsed_time) + " hour(s)"
@@ -367,18 +372,19 @@ class PerfMonitor:
         ax.figure.autofmt_xdate()
 
         # Print out legend automatically, cool!
-        ax.legend([i for i in self.reslist])
+        # ax.legend([i for i in self.reslist])
+        ax.legend(self.reslist)
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
         # fig.show()
         plt.show()
-        return
 
 # Run this bitch
 
 
 def main():
+    """Main to run the Perfmonitor."""
 
     pm = PerfMonitor()
 
