@@ -98,6 +98,7 @@ class PerfMonitor:
             tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
             tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
             tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
+
         return tempstring
 
     def which_perf_columns(self):
@@ -206,9 +207,6 @@ class PerfMonitor:
                                 r'\Process(node)\Private Bytes',
                                 r'\Process(node)\Virtual Bytes',
                                 r'\Process(node)\Working Set - Private',
-                                r'\Process(java#1)\Private Bytes',
-                                r'\Process(java#1)\Virtual Bytes',
-                                r'\Process(java#1)\Working Set - Private',
                                 r'\Process(java)\Private Bytes',
                                 r'\Process(java)\Virtual Bytes',
                                 r'\Process(java)\Working Set - Private',
@@ -220,10 +218,7 @@ class PerfMonitor:
                                 r'\Process(FlirTcpClient)\Working Set - Private',
                                 r'\Process(APP)\Private Bytes',
                                 r'\Process(APP)\Virtual Bytes',
-                                r'\Process(APP)\Working Set - Private',
-                                r'\Process(IS)\Private Bytes',
-                                r'\Process(IS)\Virtual Bytes',
-                                r'\Process(IS)\Working Set - Private']
+                                r'\Process(APP)\Working Set - Private']
 
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
