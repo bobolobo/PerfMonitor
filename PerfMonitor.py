@@ -57,14 +57,14 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['oldworld', 'newworld', 'catcworld'],
-                                       type=str, help='oldworld, newworld, or catcworld')
+            parser_report.add_argument('world', choices=['oldworld', 'newworld', 'catcworld', 'audiodgworld'],
+                                       type=str, help='oldworld, newworld, catcworld, or audiodgworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['oldworld', 'newworld', 'catcworld'],
-                                       type=str, help='oldworld, newworld, or catcworld')
+            parser_record.add_argument('world', choices=['oldworld', 'newworld', 'catcworld', 'audiodgworld'],
+                                       type=str, help='oldworld, newworld, catcworld, audiodgworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -75,6 +75,8 @@ class PerfMonitor:
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
 
             if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor. Reset to no monitor.
+                args.esf = 'noesf'
+            if args.world == 'audiodgworld':
                 args.esf = 'noesf'
 
             return args
@@ -152,11 +154,19 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
-            process_name_to_monitor = 'APP.exe'
+            process_name_to_monitor = 'IS.exe'
             if not self.process_checker(process_name_to_monitor):
-                print("APP.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
+                print("IS.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_CatcWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'audiodgworld':
+            process_name_to_monitor = 'audiodg.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("audiodg is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_Audiodg.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
@@ -175,6 +185,10 @@ class PerfMonitor:
         print("CTRL-C to stop recording earlier.")
 
         # Run through ticks (time) for x-axis.
+
+        stats_list_audiodgworld = [r'\Process(audiodg)\Private Bytes',
+                                   r'\Process(audiodg)\Virtual Bytes',
+                                   r'\Process(audiodg)\Working Set - Private']
 
         stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
                                r'\Process(BGExaminer)\Virtual Bytes',
@@ -249,8 +263,10 @@ class PerfMonitor:
             stats_list = stats_list_newworld
         elif which_world == 'catcworld':
             stats_list = stats_list_catcworld
-        else:  # oldworld
+        elif which_world == 'oldworld':
             stats_list = stats_list_oldworld
+        else:  # monitoring just audiodg process:
+            stats_list = stats_list_audiodgworld
 
         # Capture ESF data only if 'ESF' argument was given on commandline.
 
@@ -407,6 +423,8 @@ def main():
         pm.data_collector("newworld")
     elif choice.subcommand == "record" and choice.world == "catcworld":
         pm.data_collector("catcworld")
+    elif choice.subcommand == "record" and choice.world == "audiodgworld":
+        pm.data_collector("audiodgworld")
     elif choice.subcommand == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter()
@@ -415,6 +433,9 @@ def main():
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "catcworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_CatcWorld.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "audiodgworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_Audiodg.csv")
         pm.data_plotter()
 
 
