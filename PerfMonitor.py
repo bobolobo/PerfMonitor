@@ -154,9 +154,9 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
-            process_name_to_monitor = 'IS.exe'
+            process_name_to_monitor = 'IPS.exe'
             if not self.process_checker(process_name_to_monitor):
-                print("IS.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
+                print("IPS.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_CatcWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
