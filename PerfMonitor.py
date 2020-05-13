@@ -63,8 +63,8 @@ class PerfMonitor:
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['oldworld', 'newworld', 'catcworld', 'audiodgworld'],
-                                       type=str, help='oldworld, newworld, catcworld, audiodgworld')
+            parser_record.add_argument('world', choices=['ecatworld', 'oldworld', 'newworld', 'catcworld', 'audiodgworld'],
+                                       type=str, help='ecatworld, oldworld, newworld, catcworld, audiodgworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -74,9 +74,11 @@ class PerfMonitor:
             if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
 
+            if args.world == 'ecatworld':  # CAT-C does not have a separate ESF process to monitor. Reset to no monitor.
+                args.esf = 'noesf'
             if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor. Reset to no monitor.
                 args.esf = 'noesf'
-            if args.world == 'audiodgworld':
+            if args.world == 'audiodgworld': # Just monitoring audiodg process since it likes to runaway sometimes.
                 args.esf = 'noesf'
 
             return args
@@ -137,7 +139,15 @@ class PerfMonitor:
     def process_to_monitor(self, which_world):
         """This picks which process to monitor based on WORLD arg."""
 
-        if which_world == 'newworld':
+        if which_world == 'ecatworld':
+            process_name_to_monitor = 'ECAT.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("ECAT is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_EcatWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'newworld':
             process_name_to_monitor = 'IDEMIA.DocAuth.Document.App.exe'
             if not self.process_checker(process_name_to_monitor):
                 print("DocAuth is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
@@ -189,6 +199,22 @@ class PerfMonitor:
         stats_list_audiodgworld = [r'\Process(audiodg)\Private Bytes',
                                    r'\Process(audiodg)\Virtual Bytes',
                                    r'\Process(audiodg)\Working Set - Private']
+
+        stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
+                                r'\Process(BGExaminer)\Virtual Bytes',
+                                r'\Process(BGExaminer)\Working Set - Private',
+                                r'\Process(bgServer)\Private Bytes',
+                                r'\Process(bgServer)\Virtual Bytes',
+                                r'\Process(bgServer)\Working Set - Private',
+                                r'\Process(ECAT)\Private Bytes',
+                                r'\Process(ECAT)\Virtual Bytes',
+                                r'\Process(ECAT)\Working Set - Private',
+                                r'\Process(IDEMIA.DocAuth.RegulaService)\Private Bytes',
+                                r'\Process(IDEMIA.DocAuth.RegulaService)\Virtual Bytes',
+                                r'\Process(IDEMIA.DocAuth.RegulaService)\Working Set - Private',
+                                r'\Process(DataAnalysisApiHost)\Private Bytes',
+                                r'\Process(DataAnalysisApiHost)\Virtual Bytes',
+                                r'\Process(DataAnalysisApiHost)\Working Set - Private']
 
         stats_list_oldworld = [r'\Process(BGExaminer)\Private Bytes',
                                r'\Process(BGExaminer)\Virtual Bytes',
@@ -258,6 +284,8 @@ class PerfMonitor:
         # Load the processes to check based on whether oldworld, newworld, catcworld
         if which_world == 'newworld':
             stats_list = stats_list_newworld
+        elif which_world == 'ecatworld':
+            stats_list = stats_list_ecatworld
         elif which_world == 'catcworld':
             stats_list = stats_list_catcworld
         elif which_world == 'oldworld':
@@ -418,6 +446,8 @@ def main():
         pm.data_collector("oldworld")
     elif choice.subcommand == "record" and choice.world == "newworld":
         pm.data_collector("newworld")
+    elif choice.subcommand == "record" and choice.world == "ecatworld":
+        pm.data_collector("ecatworld")
     elif choice.subcommand == "record" and choice.world == "catcworld":
         pm.data_collector("catcworld")
     elif choice.subcommand == "record" and choice.world == "audiodgworld":
@@ -427,6 +457,9 @@ def main():
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "ecatworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_EcatWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "catcworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_CatcWorld.csv")
