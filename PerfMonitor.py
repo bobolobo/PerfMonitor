@@ -57,8 +57,8 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['oldworld', 'newworld', 'catcworld', 'audiodgworld'],
-                                       type=str, help='oldworld, newworld, catcworld, or audiodgworld')
+            parser_report.add_argument('world', choices=['ecatworld', 'oldworld', 'newworld', 'catcworld', 'audiodgworld'],
+                                       type=str, help='ecatworld, oldworld, newworld, catcworld, or audiodgworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
