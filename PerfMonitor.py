@@ -214,8 +214,8 @@ class PerfMonitor:
 
         stats_list_biocoreworld = [r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteSAerver)\Private Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteSAerver)\Virtual Bytes']
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Virtual Bytes']
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
