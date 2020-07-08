@@ -280,8 +280,7 @@ class PerfMonitor:
                                 r'\Process(IPS)\Working Set - Private',
                                 r'\Process(IA)\Private Bytes',
                                 r'\Process(IA)\Virtual Bytes',
-                                r'\Process(IA)\Working Set - Private',
-                                ]
+                                r'\Process(IA)\Working Set - Private']
 
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
