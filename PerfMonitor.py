@@ -57,16 +57,16 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['biocoreworld', 'ecatworld', 'oldworld', 'newworld',
-                                                         'catcworld', 'audiodgworld'], type=str,
-                                       help='biocoreworld, ecatworld, oldworld, newworld, catcworld, or audiodgworld')
+            parser_report.add_argument('world', choices=['dotnetworld','biocoreworld', 'ecatworld', 'oldworld', 'newworld',
+                                       'catcworld', 'audiodgworld'], type=str,
+                                       help='networld, biocoreworld, ecatworld, oldworld, newworld, catcworld, or audiodgworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['biocoreworld', 'ecatworld', 'oldworld', 'newworld',
-                                                         'catcworld', 'audiodgworld'], type=str,
-                                       help='biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld')
+            parser_record.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld',
+                                                         'newworld', 'catcworld', 'audiodgworld'], type=str,
+                                       help='dotnetworld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -76,6 +76,8 @@ class PerfMonitor:
             if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
 
+            if args.world == 'dotnetworld':  #Biocore testing does not have a separate ESF process to monitor.
+                args.esf = 'noesf'
             if args.world == 'biocoreworld':  #Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
             if args.world == 'ecatworld':  # CAT-C does not have a separate ESF process to monitor.
@@ -143,7 +145,16 @@ class PerfMonitor:
     def process_to_monitor(self, which_world):
         """This picks which process to monitor based on WORLD arg."""
 
-        if which_world == 'biocoreworld':
+        if which_world == 'dotnetworld':
+            process_name_to_monitor = 'IDEMIA.DocAuth.DocumentService.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("IDEMIA.DocAuth.DocumentService is NOT running. "
+                      "Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_DotNetWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'biocoreworld':
             process_name_to_monitor = 'IDEMIA.DocAuth.BiometricCore.DeviceUI.exe'
             if not self.process_checker(process_name_to_monitor):
                 print("BioCore is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
@@ -176,7 +187,7 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
-            process_name_to_monitor = 'IPS.exe'
+            process_name_to_monitor = 'CATC.exe'
             if not self.process_checker(process_name_to_monitor):
                 print("IPS.exe is NOT running. Please startup CATC BEFORE running this PerformanceMonitor.")
                 exit(2)
@@ -211,6 +222,10 @@ class PerfMonitor:
         stats_list_audiodgworld = [r'\Process(audiodg)\Private Bytes',
                                    r'\Process(audiodg)\Virtual Bytes',
                                    r'\Process(audiodg)\Working Set - Private']
+
+        stats_list_dotnetworld = [r'\Process(IDEMIA.DocAuth.DocumentService)\Private Bytes',
+                                  r'\Process(IDEMIA.DocAuth.DocumentService)\Virtual Bytes',
+                                  r'\Process(IDEMIA.DocAuth.DocumentService)\Working Set - Private']
 
         stats_list_biocoreworld = [r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Virtual Bytes',
@@ -257,9 +272,9 @@ class PerfMonitor:
                                 r'\Process(bgServer)\Private Bytes',
                                 r'\Process(bgServer)\Virtual Bytes',
                                 r'\Process(bgServer)\Working Set - Private',
-                                r'\Process(ECAT)\Private Bytes',
-                                r'\Process(ECAT)\Virtual Bytes',
-                                r'\Process(ECAT)\Working Set - Private',
+                                r'\Process(CATC)\Private Bytes',
+                                r'\Process(CATC)\Virtual Bytes',
+                                r'\Process(CATC)\Working Set - Private',
                                 r'\Process(node)\Private Bytes',
                                 r'\Process(node)\Virtual Bytes',
                                 r'\Process(node)\Working Set - Private',
@@ -302,6 +317,8 @@ class PerfMonitor:
         # Load the processes to check based on whether oldworld, newworld, catcworld
         if which_world == 'newworld':
             stats_list = stats_list_newworld
+        elif which_world == 'dotnetworld':
+            stats_list = stats_list_dotnetworld
         elif which_world == 'biocoreworld':
             stats_list = stats_list_biocoreworld
         elif which_world == 'ecatworld':
@@ -470,6 +487,8 @@ def main():
         pm.data_collector("ecatworld")
     elif choice.subcommand == "record" and choice.world == "biocoreworld":
         pm.data_collector( "biocoreworld" )
+    elif choice.subcommand == "record" and choice.world == "dotnetworld":
+        pm.data_collector( "dotnetworld" )
     elif choice.subcommand == "record" and choice.world == "catcworld":
         pm.data_collector("catcworld")
     elif choice.subcommand == "record" and choice.world == "audiodgworld":
@@ -485,6 +504,9 @@ def main():
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "biocoreworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_BioCoreWorld.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "dotnetworld":
+        pm.file_reader( r"c:\Temp\DocAuthPerfData_DotNetWorld.csv" )
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "catcworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_CatcWorld.csv")
