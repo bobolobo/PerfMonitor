@@ -232,7 +232,7 @@ class PerfMonitor:
                                    r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Working Set - Private',
                                    r'\Process(IDEMIA.DocAuth.MorpholiteService)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.MorpholiteService)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private'
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Virtual Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private']
