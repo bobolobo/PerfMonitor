@@ -155,7 +155,7 @@ class PerfMonitor:
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'biocoreworld':
-            process_name_to_monitor = 'IDEMIA.DocAuth.BiometricCore.DeviceUI.exe'
+            process_name_to_monitor = 'IDEMIA.DocAuth.BiometricService.exe'
             if not self.process_checker(process_name_to_monitor):
                 print("BioCore is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
@@ -232,7 +232,10 @@ class PerfMonitor:
                                    r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Working Set - Private',
                                    r'\Process(IDEMIA.DocAuth.MorpholiteService)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.MorpholiteService)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private']
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private'
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private']
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
