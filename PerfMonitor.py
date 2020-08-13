@@ -57,16 +57,16 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['dotnetworld','biocoreworld', 'ecatworld', 'oldworld', 'newworld',
-                                       'catcworld', 'audiodgworld'], type=str,
-                                       help='networld, biocoreworld, ecatworld, oldworld, newworld, catcworld, or audiodgworld')
+            parser_report.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld',
+                                       'newworld', 'catcworld', 'audiodgworld'], type=str, help='networld, '
+                                       'biocoreworld, ecatworld, oldworld, newworld, catcworld, or audiodgworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
             parser_record.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld',
-                                                         'newworld', 'catcworld', 'audiodgworld'], type=str,
-                                       help='dotnetworld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld')
+                                       'newworld', 'catcworld', 'audiodgworld'], type=str, help='dotnetworld, '
+                                       'biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -235,7 +235,31 @@ class PerfMonitor:
                                    r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private']
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private',
+                                   r'\Process(node)\Private Bytes',
+                                   r'\Process(node)\Virtual Bytes',
+                                   r'\Process(node)\Working Set - Private',
+                                   r'\Process(java)\Private Bytes',
+                                   r'\Process(java)\Virtual Bytes',
+                                   r'\Process(java)\Working Set - Private',
+                                   r'\Process(java#1)\Private Bytes',
+                                   r'\Process(java#1)\Virtual Bytes',
+                                   r'\Process(java#1)\Working Set - Private',
+                                   r'\Process(FlirTcpClient#1)\Private Bytes',
+                                   r'\Process(FlirTcpClient#1)\Virtual Bytes',
+                                   r'\Process(FlirTcpClient#1)\Working Set - Private',
+                                   r'\Process(FlirTcpClient)\Private Bytes',
+                                   r'\Process(FlirTcpClient)\Virtual Bytes',
+                                   r'\Process(FlirTcpClient)\Working Set - Private',
+                                   r'\Process(IPS)\Private Bytes',
+                                   r'\Process(IPS)\Virtual Bytes',
+                                   r'\Process(IPS)\Working Set - Private',
+                                   r'\Process(IA)\Private Bytes',
+                                   r'\Process(IA)\Virtual Bytes',
+                                   r'\Process(IA)\Working Set - Private',
+                                   r'\Process(audiodg)\Private Bytes',
+                                   r'\Process(audiodg)\Virtual Bytes',
+                                   r'\Process(audiodg)\Working Set - Private']
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
