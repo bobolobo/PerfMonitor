@@ -256,10 +256,7 @@ class PerfMonitor:
                                    r'\Process(IPS)\Working Set - Private',
                                    r'\Process(IA)\Private Bytes',
                                    r'\Process(IA)\Virtual Bytes',
-                                   r'\Process(IA)\Working Set - Private',
-                                   r'\Process(audiodg)\Private Bytes',
-                                   r'\Process(audiodg)\Virtual Bytes',
-                                   r'\Process(audiodg)\Working Set - Private']
+                                   r'\Process(IA)\Working Set - Private',]
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
