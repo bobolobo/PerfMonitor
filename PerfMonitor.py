@@ -76,13 +76,17 @@ class PerfMonitor:
             if hasattr(args, 'hours'):   # Only set this if we are recording data. IF no "hours" arg, then a crash.
                 self.time_max_ticks = args.hours * 60  # mult by 60, Once a min.
 
-            if args.world == 'dotnetworld':  #Biocore testing does not have a separate ESF process to monitor.
+            # At some point ESF will be a separate process to monitor for all worlds.
+            # Right now only newworld has a separate ESF process. So disable esf checking for all other processes.
+            if args.world == 'oldworld':  # Oldworld does not have a separate ESF service yet.
                 args.esf = 'noesf'
-            if args.world == 'biocoreworld':  #Biocore testing does not have a separate ESF process to monitor.
+            if args.world == 'dotnetworld':  # Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
-            if args.world == 'ecatworld':  # CAT-C does not have a separate ESF process to monitor.
+            if args.world == 'biocoreworld':  # Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
-            if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor.
+            if args.world == 'ecatworld':  # CAT-C does not have a separate ESF process to monitor since it is oldworld.
+                args.esf = 'noesf'
+            if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor since it is oldworld.
                 args.esf = 'noesf'
             if args.world == 'audiodgworld': # Just monitoring audiodg process since it likes to runaway sometimes.
                 args.esf = 'noesf'
@@ -256,7 +260,7 @@ class PerfMonitor:
                                    r'\Process(IPS)\Working Set - Private',
                                    r'\Process(IA)\Private Bytes',
                                    r'\Process(IA)\Virtual Bytes',
-                                   r'\Process(IA)\Working Set - Private',]
+                                   r'\Process(IA)\Working Set - Private']
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
@@ -338,7 +342,7 @@ class PerfMonitor:
                           r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Working Set - Private']
 
-        # Load the processes to check based on whether oldworld, newworld, catcworld
+        # Load the processes to check based on whether oldworld, newworld, catcworld, etc.
         if which_world == 'newworld':
             stats_list = stats_list_newworld
         elif which_world == 'dotnetworld':
@@ -373,18 +377,28 @@ class PerfMonitor:
             # This is where we interrogate the statistics.
 
             try:
-                # Using a list comprehension instead of a bunch of variables. Interrogate perf data.
-                line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
+                # Used to use a list comprehension to interrogate perf data. But needed to interrogate individual
+                # perf data in case one or more of them were down.
+                # line_of_data = [winstats.get_perf_data(i, fmts='double') for i in stats_list]
+
+                # This is where we REALLY interrogate the statistics.
+
+                line_of_data = []
+                line_of_data_esf = []
+
+                for i in stats_list:
+                    line_of_data.append(winstats.get_perf_data(i, fmts='double'))
 
                 # Capture ESF data only if 'ESF' argument was given on commandline.
-                # choicetemp = self.command_line_arguments()
 
                 if choicetemp.esf == 'esf':
-                    line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
+                    for i in stats_list_esf:
+                        # line_of_data_esf = [winstats.get_perf_data(i, fmts='double') for i in stats_list_esf]
+                        line_of_data_esf.append(winstats.get_perf_data(i, fmts='double'))
 
                     # Write a row of stats to the csv file including ESF stats.
                     writer.writerow((time_track, self.string_cleaner("data", line_of_data),
-                                     self.string_cleaner("data", line_of_data_esf)))
+                                    self.string_cleaner("data", line_of_data_esf)))
                 else:
                     # Write a row of stats to the csv file NOT including ESF stats.
                     writer.writerow((time_track, self.string_cleaner("data", line_of_data)))
@@ -399,11 +413,12 @@ class PerfMonitor:
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice
 
             except WindowsError as error:  # Processes down? Winstat errors out, so handle it. Continue the loop.
-                print(f"One of the processes was not available for interrogation:", error)
+                # print(f"One of the processes was not available for interrogation:", error)
+                print(f"One of the processes was not available for interrogation:", i)
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
 
             except KeyboardInterrupt as error:  # On ctrl-c from keyboard, flush buffer, close file, exit. Break loop.
-                print("\n\nExiting...")
+                print("\n\nExiting due to user action...")
                 break
 
         f.close()
