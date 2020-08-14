@@ -98,7 +98,6 @@ class PerfMonitor:
 
             return args
 
-
     def string_cleaner(self, what_to_do, temp_string_buffer):
         """ Routine to strip brackets, parens, extra commas, etc from string buffer before writing to csv file """
 
@@ -112,6 +111,9 @@ class PerfMonitor:
             tempstring = (str(temp_string_buffer).translate(str.maketrans({'[': '', ']': '', '\'': '', ')': '', '(': ''})))
             tempstring = re.sub(r',,', ',', tempstring)  # Remove double commas
             tempstring = re.sub(r',$', '', tempstring)  # Remove Trailing comma
+        elif what_to_do == "badstatname":
+            # tempstring = temp_string_buffer[temp_string_buffer.find("(")+1:temp_string_buffer.find(")")]
+            tempstring = re.search(r'\((.*?)\)', temp_string_buffer).group(1)
 
         return tempstring
 
@@ -414,7 +416,7 @@ class PerfMonitor:
 
             except WindowsError as error:  # Processes down? Winstat errors out, so handle it. Continue the loop.
                 # print(f"One of the processes was not available for interrogation:", error)
-                print(f"One of the processes was not available for interrogation:", i)
+                print(f"Process was not available for interrogation:", self.string_cleaner("badstatname", i))
                 time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
 
             except KeyboardInterrupt as error:  # On ctrl-c from keyboard, flush buffer, close file, exit. Break loop.
