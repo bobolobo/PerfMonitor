@@ -19,6 +19,7 @@ import psutil
 import winstats
 import numpy
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 
 
 class PerfMonitor:
@@ -325,7 +326,10 @@ class PerfMonitor:
                                 r'\Process(IPS)\Working Set - Private',
                                 r'\Process(IA)\Private Bytes',
                                 r'\Process(IA)\Virtual Bytes',
-                                r'\Process(IA)\Working Set - Private']
+                                r'\Process(IA)\Working Set - Private',
+                                r'\Process(IA#1)\Private Bytes',
+                                r'\Process(IA#1)\Virtual Bytes',
+                                r'\Process(IA#1)\Working Set - Private']
 
         stats_list_newworld = [r'\Process(IDEMIA.DocAuth.Document.App)\Private Bytes',
                                r'\Process(IDEMIA.DocAuth.Document.App)\Virtual Bytes',
@@ -471,6 +475,10 @@ class PerfMonitor:
 
         # Create cartesian plane, draw labels and title
         _fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart. Figure is a dummy var.
+
+        # Some workarounds to minimize crazy scientific offset at top left and bottom right of chart.
+        # plt.rcParams['axes.formatter.useoffset'] = False   # This did not work
+        plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
 
         # Build chart title and include number of hours that the test ran for.
         chart_title = "Bricktest memory utilization ran for " + str(total_elapsed_time) + " hour(s)"
