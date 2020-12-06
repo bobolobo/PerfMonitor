@@ -58,16 +58,12 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld',
-                                       'newworld', 'catcworld', 'audiodgworld'], type=str, help='networld, '
-                                       'biocoreworld, ecatworld, oldworld, newworld, catcworld, or audiodgworld')
+            parser_report.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='networld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld or autocatworld')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld',
-                                       'newworld', 'catcworld', 'audiodgworld'], type=str, help='dotnetworld, '
-                                       'biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld')
+            parser_record.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld','newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='dotnetworld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld, autocatworld')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -90,6 +86,8 @@ class PerfMonitor:
             if args.world == 'catcworld':  # CAT-C does not have a separate ESF process to monitor since it is oldworld.
                 args.esf = 'noesf'
             if args.world == 'audiodgworld': # Just monitoring audiodg process since it likes to runaway sometimes.
+                args.esf = 'noesf'
+            if args.world == 'audiodgworld': # AutoCAT testing does not have a separate ESF process to monitor??
                 args.esf = 'noesf'
 
             return args
@@ -207,6 +205,14 @@ class PerfMonitor:
                 print("audiodg is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_Audiodg.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'autocatworld':
+            process_name_to_monitor = 'IDEMIA.DocAuth.CAT.App.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("IDEMIA.DocAuth.CAT.App.exe is NOT running. Please startup AutoCAT BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_AutocatWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
 
@@ -347,6 +353,44 @@ class PerfMonitor:
                                r'\Process(IDEMIA.DocAuth.LinecodeService)\Virtual Bytes',
                                r'\Process(IDEMIA.DocAuth.LinecodeService)\Working Set - Private']
 
+        stats_list_autocatworld = [r'\Process(IDEMIA.DocAuth.CAT.App.exe)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.CAT.App.exe)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.CAT.App.exe)\Working Set - Private',
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private',
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private',
+                                   r'\Process(IDEMIA.DocAuth.DocumentService.exe)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.DocumentService.exe)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.DocumentService.exe)\Working Set - Private',
+                                   r'\Process(IDEMIA.DocAuth.CAT.StipClientService.exe)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.CAT.StipClientService.exe)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.CAT.StipClientService.exe)\Working Set - Private',
+                                   r'\Process(node)\Private Bytes',
+                                   r'\Process(node)\Virtual Bytes',
+                                   r'\Process(node)\Working Set - Private',
+                                   r'\Process(java)\Private Bytes',
+                                   r'\Process(java)\Virtual Bytes',
+                                   r'\Process(java)\Working Set - Private',
+                                   r'\Process(java#1)\Private Bytes',
+                                   r'\Process(java#1)\Virtual Bytes',
+                                   r'\Process(java#1)\Working Set - Private',
+                                   r'\Process(FlirTcpClient#1)\Private Bytes',
+                                   r'\Process(FlirTcpClient#1)\Virtual Bytes',
+                                   r'\Process(FlirTcpClient#1)\Working Set - Private',
+                                   r'\Process(FlirTcpClient)\Private Bytes',
+                                   r'\Process(FlirTcpClient)\Virtual Bytes',
+                                   r'\Process(FlirTcpClient)\Working Set - Private',
+                                   r'\Process(IPS)\Private Bytes',
+                                   r'\Process(IPS)\Virtual Bytes',
+                                   r'\Process(IPS)\Working Set - Private',
+                                   r'\Process(IA)\Private Bytes',
+                                   r'\Process(IA)\Virtual Bytes',
+                                   r'\Process(IA)\Working Set - Private']
+
+
         stats_list_esf = [r'\Process(IDEMIA.DocAuth.ESFService)\Private Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Virtual Bytes',
                           r'\Process(IDEMIA.DocAuth.ESFService)\Working Set - Private']
@@ -364,6 +408,8 @@ class PerfMonitor:
             stats_list = stats_list_catcworld
         elif which_world == 'oldworld':
             stats_list = stats_list_oldworld
+        elif which_world == 'autocatworld':
+            stats_list = stats_list_autocatworld
         else:  # monitoring just audiodg process:
             stats_list = stats_list_audiodgworld
 
@@ -545,6 +591,8 @@ def main():
         pm.data_collector("catcworld")
     elif choice.subcommand == "record" and choice.world == "audiodgworld":
         pm.data_collector("audiodgworld")
+    elif choice.subcommand == "record" and choice.world == "autocatworld":
+        pm.data_collector("autocatworld")
     elif choice.subcommand == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
         pm.data_plotter()
@@ -565,6 +613,9 @@ def main():
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "audiodgworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_Audiodg.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "autocatworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_AutocatWorld.csv")
         pm.data_plotter()
 
 
