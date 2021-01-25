@@ -58,13 +58,13 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='networld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld or autocatworld')
+            parser_report.add_argument('world', metavar='world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld','newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='dotnetworld, biocoreworld, ecatworld, oldworld, newworld, catcworld, audiodgworld, autocatworld')
-            parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str, help='esf | noesf')
+            parser_record.add_argument('world', metavar='world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
+            parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str)
             parser_record.add_argument('hours', type=int, help='number of hours')
 
             # Parse the arguments
@@ -76,6 +76,8 @@ class PerfMonitor:
             # At some point ESF will be a separate process to monitor for all worlds.
             # Right now only newworld has a separate ESF process. So disable esf checking for all other processes.
             if args.world == 'oldworld':  # Oldworld does not have a separate ESF service yet.
+                args.esf = 'noesf'
+            if args.world == 'oldserviceworld':  # Oldserviceworld does not have a separate ESF service yet.
                 args.esf = 'noesf'
             if args.world == 'dotnetworld':  # Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
@@ -191,6 +193,14 @@ class PerfMonitor:
             output_filename = r'c:\Temp\DocAuthPerfData_OldWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'oldserviceworld':
+            process_name_to_monitor = 'DocAuth.WindowsService.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("DocAuth Services is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_OldServiceWorld.csv'
+            f = open( output_filename, 'wt', buffering=1 )
+            writer = csv.writer( f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL )
         elif which_world == 'catcworld':
             process_name_to_monitor = 'CATC.exe'
             if not self.process_checker(process_name_to_monitor):
@@ -303,6 +313,16 @@ class PerfMonitor:
                                r'\Process(DataAnalysisApiHost)\Virtual Bytes',
                                r'\Process(DataAnalysisApiHost)\Working Set - Private']
 
+        stats_list_oldserviceworld = [r'\Process(BGExaminer)\Private Bytes',
+                                      r'\Process(BGExaminer)\Virtual Bytes',
+                                      r'\Process(BGExaminer)\Working Set - Private',
+                                      r'\Process(bgServer)\Private Bytes',
+                                      r'\Process(bgServer)\Virtual Bytes',
+                                      r'\Process(bgServer)\Working Set - Private',
+                                      r'\Process(DocAuth.WindowsService)\Private Bytes',
+                                      r'\Process(DocAuth.WindowsService)\Virtual Bytes',
+                                      r'\Process(DocAuth.WindowsService)\Working Set - Private']
+
         stats_list_catcworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
                                 r'\Process(BGExaminer)\Working Set - Private',
@@ -410,6 +430,8 @@ class PerfMonitor:
             stats_list = stats_list_catcworld
         elif which_world == 'oldworld':
             stats_list = stats_list_oldworld
+        elif which_world == 'oldserviceworld':
+            stats_list = stats_list_oldserviceworld
         elif which_world == 'autocatworld':
             stats_list = stats_list_autocatworld
         else:  # monitoring just audiodg process:
@@ -577,10 +599,12 @@ def main():
     # pm.command_line_arguments()
     # choice = pm.args  # Using this global which i would like to get as a return from command_line_augments() instead.
 
-    print("Choice: ", choice)
+    # print("Choice: ", choice)
 
     if choice.subcommand == "record" and choice.world == "oldworld":
         pm.data_collector("oldworld")
+    elif choice.subcommand == "record" and choice.world == "oldserviceworld":
+        pm.data_collector("oldserviceworld")
     elif choice.subcommand == "record" and choice.world == "newworld":
         pm.data_collector("newworld")
     elif choice.subcommand == "record" and choice.world == "ecatworld":
@@ -597,6 +621,9 @@ def main():
         pm.data_collector("autocatworld")
     elif choice.subcommand == "report" and choice.world == "oldworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_OldWorld.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "oldserviceworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_OldServiceWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "newworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData.csv")
