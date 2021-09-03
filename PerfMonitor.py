@@ -199,8 +199,8 @@ class PerfMonitor:
                 print("DocAuth Services is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_OldServiceWorld.csv'
-            f = open( output_filename, 'wt', buffering=1 )
-            writer = csv.writer( f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL )
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'catcworld':
             process_name_to_monitor = 'CATC.exe'
             if not self.process_checker(process_name_to_monitor):
@@ -477,7 +477,7 @@ class PerfMonitor:
 
                     # Write a row of stats to the csv file including ESF stats.
                     writer.writerow((time_track, self.string_cleaner("data", line_of_data),
-                                    self.string_cleaner("data", line_of_data_esf)))
+                                     self.string_cleaner("data", line_of_data_esf)))
                 else:
                     # Write a row of stats to the csv file NOT including ESF stats.
                     writer.writerow((time_track, self.string_cleaner("data", line_of_data)))
@@ -610,9 +610,9 @@ def main():
     elif choice.subcommand == "record" and choice.world == "ecatworld":
         pm.data_collector("ecatworld")
     elif choice.subcommand == "record" and choice.world == "biocoreworld":
-        pm.data_collector( "biocoreworld" )
+        pm.data_collector("biocoreworld")
     elif choice.subcommand == "record" and choice.world == "dotnetworld":
-        pm.data_collector( "dotnetworld" )
+        pm.data_collector("dotnetworld")
     elif choice.subcommand == "record" and choice.world == "catcworld":
         pm.data_collector("catcworld")
     elif choice.subcommand == "record" and choice.world == "audiodgworld":
@@ -635,7 +635,7 @@ def main():
         pm.file_reader(r"c:\Temp\DocAuthPerfData_BioCoreWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "dotnetworld":
-        pm.file_reader( r"c:\Temp\DocAuthPerfData_DotNetWorld.csv" )
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_DotNetWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "catcworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_CatcWorld.csv")
