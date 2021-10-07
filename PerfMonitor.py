@@ -268,6 +268,9 @@ class PerfMonitor:
                                    r'\Process(java#1)\Private Bytes',
                                    r'\Process(java#1)\Virtual Bytes',
                                    r'\Process(java#1)\Working Set - Private',
+                                   r'\Process(java#2)\Private Bytes',
+                                   r'\Process(java#2)\Virtual Bytes',
+                                   r'\Process(java#2)\Working Set - Private',
                                    r'\Process(FlirTcpClient#1)\Private Bytes',
                                    r'\Process(FlirTcpClient#1)\Virtual Bytes',
                                    r'\Process(FlirTcpClient#1)\Working Set - Private',
@@ -279,7 +282,10 @@ class PerfMonitor:
                                    r'\Process(IPS)\Working Set - Private',
                                    r'\Process(IA)\Private Bytes',
                                    r'\Process(IA)\Virtual Bytes',
-                                   r'\Process(IA)\Working Set - Private']
+                                   r'\Process(IA)\Working Set - Private',
+                                   r'\Process(IA#1)\Private Bytes',
+                                   r'\Process(IA#1)\Virtual Bytes',
+                                   r'\Process(IA#1)\Working Set - Private']
 
         stats_list_ecatworld = [r'\Process(BGExaminer)\Private Bytes',
                                 r'\Process(BGExaminer)\Virtual Bytes',
