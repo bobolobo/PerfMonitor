@@ -250,12 +250,12 @@ class PerfMonitor:
                                   r'\Process(IDEMIA.DocAuth.DocumentService)\Virtual Bytes',
                                   r'\Process(IDEMIA.DocAuth.DocumentService)\Working Set - Private']
 
-        stats_list_biocoreworld = [r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Private Bytes',
-                                   r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.BiometricCore.DeviceUI)\Working Set - Private',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Private Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Virtual Bytes',
-                                   r'\Process(IDEMIA.DocAuth.MorpholiteService)\Working Set - Private',
+        stats_list_biocoreworld = [r'\Process(IDEMIA.DocAuth.DocumentService)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.DocumentService)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.DocumentService)\Working Set - Private',
+                                   r'\Process(IDEMIA.DocAuth.IdentityAuthentication.App)\Private Bytes',
+                                   r'\Process(IDEMIA.DocAuth.IdentityAuthentication.App)\Virtual Bytes',
+                                   r'\Process(IDEMIA.DocAuth.IdentityAuthentication.App)\Working Set - Private',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Private Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Virtual Bytes',
                                    r'\Process(IDEMIA.DocAuth.BiometricService)\Working Set - Private',
