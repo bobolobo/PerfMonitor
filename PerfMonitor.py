@@ -35,17 +35,22 @@ class PerfMonitor:
     reslist = list()
 
     def process_checker(self, process_to_monitor):
-        """Verify that some IDEMIA... processes are running"""
+        """Verify that important IDEMIA... processes are running"""
 
         for p in psutil.process_iter():
-            if process_to_monitor in p.name():
-                if self.monitored_pid == 0:  # If this is the first time through, capture the name and pid.
-                    self.monitored_process_name = p.name()
-                    self.monitored_pid = p.pid
-                elif self.monitored_pid != p.pid:
-                    self.monitored_pid_counter += 1  # Track times that Regula has restarted
-                    self.monitored_pid = p.pid       # Get new pid value for Regula service
-                return True
+            try:
+                if process_to_monitor in p.name():
+                    if self.monitored_pid == 0:  # If this is the first time through, capture the name and pid.
+                        self.monitored_process_name = p.name()
+                        self.monitored_pid = p.pid
+                    elif self.monitored_pid != p.pid:
+                        self.monitored_pid_counter += 1  # Track times that the process has restarted
+                        self.monitored_pid = p.pid       # Get new pid value for the process
+                    return True
+            except WindowsError as error:  # Main Processes down? Can't find it to count. Continue the loop.
+                print(f"The main Process was not available for interrogation and counting:", process_to_monitor)
+                # time.sleep(self.time_measure_seconds)  # Sleep for time slice, otherwise this keeps throwing message.
+
         return False
 
     def command_line_arguments(self):
