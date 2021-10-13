@@ -558,7 +558,7 @@ class PerfMonitor:
         self.which_perf_columns()
 
         # Create cartesian plane, draw labels and title
-        _fig, ax = plt.subplots()  # Returns a figure container and a single xy axis chart. Figure is a dummy var.
+        _fig, ax = plt.subplots(figsize=(16, 9))  # Returns a figure container and a single xy axis chart. Figure is a dummy var.
 
         # Some workarounds to minimize crazy scientific offset at top left and bottom right of chart.
         # plt.rcParams['axes.formatter.useoffset'] = False   # This did not work
@@ -588,12 +588,13 @@ class PerfMonitor:
         ax.figure.autofmt_xdate()
 
         # Print out legend automatically, cool!
-        # ax.legend([i for i in self.reslist])
-        ax.legend(self.reslist)
+        # ax.legend(self.reslist)   # Default matplotlib legend printing inside the graph wherever.
+        ax.legend(self.reslist, loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=4)  # Prints legend on top outside.
 
         # Output the chart.  Really only needed if NOT in "interactive mode".
         # If in non-interactive mode, may need to use "plt.show()" instead.
         # fig.show()
+        _fig.tight_layout()
         plt.show()
 
 # Run this bitch
