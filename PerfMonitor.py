@@ -63,12 +63,12 @@ class PerfMonitor:
             # Subparser for "Report".
             parser_report = subparsers.add_parser('report')
             # Add a required argument.
-            parser_report.add_argument('world', metavar='world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
+            parser_report.add_argument('world', metavar='world', choices=['dotnetworld', 'mobileDLworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
 
             # Subparser for "Record".
             parser_record = subparsers.add_parser('record')
             # Add required arguments.
-            parser_record.add_argument('world', metavar='world', choices=['dotnetworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
+            parser_record.add_argument('world', metavar='world', choices=['dotnetworld', 'mobileDLworld', 'biocoreworld', 'ecatworld', 'oldworld', 'oldserviceworld', 'newworld', 'catcworld', 'audiodgworld', 'autocatworld'], type=str, help='[dotnetworld | biocoreworld | ecatworld | oldworld | oldserviceworld | newworld | catcworld | audiodgworld | autocatworld]')
             parser_record.add_argument('esf', choices=['esf', 'noesf'], type=str)
             parser_record.add_argument('hours', type=int, help='number of hours')
 
@@ -86,6 +86,8 @@ class PerfMonitor:
                 args.esf = 'noesf'
             if args.world == 'dotnetworld':  # Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
+            if args.world == 'mobileDLworld':  # mobileDLworld testing does not have a separate ESF process to monitor.
+                args.esf = 'noesf'
             if args.world == 'biocoreworld':  # Biocore testing does not have a separate ESF process to monitor.
                 args.esf = 'noesf'
             if args.world == 'ecatworld':  # CAT-C does not have a separate ESF process to monitor since it is oldworld.
@@ -94,7 +96,7 @@ class PerfMonitor:
                 args.esf = 'noesf'
             if args.world == 'audiodgworld': # Just monitoring audiodg process since it likes to runaway sometimes.
                 args.esf = 'noesf'
-            if args.world == 'audiodgworld': # AutoCAT testing does not have a separate ESF process to monitor??
+            if args.world == 'autocatworld': # AutoCAT testing does not have a separate ESF process to monitor??
                 args.esf = 'noesf'
 
             return args
@@ -164,6 +166,14 @@ class PerfMonitor:
                       "Please startup DocAuth BEFORE running this PerformanceMonitor.")
                 exit(2)
             output_filename = r'c:\Temp\DocAuthPerfData_DotNetWorld.csv'
+            f = open(output_filename, 'wt', buffering=1)
+            writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        elif which_world == 'mobileDLworld':
+            process_name_to_monitor = 'MobileDLReaderSampleApp.exe'
+            if not self.process_checker(process_name_to_monitor):
+                print("Standalone MobileDLReaderSampleApp is NOT running. Please startup DocAuth BEFORE running this PerformanceMonitor.")
+                exit(2)
+            output_filename = r'c:\Temp\DocAuthPerfData_MobileDLReaderSampleAppWorld.csv'
             f = open(output_filename, 'wt', buffering=1)
             writer = csv.writer(f, delimiter=',', quotechar=' ', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         elif which_world == 'biocoreworld':
@@ -250,6 +260,10 @@ class PerfMonitor:
         stats_list_audiodgworld = [r'\Process(audiodg)\Private Bytes',
                                    r'\Process(audiodg)\Virtual Bytes',
                                    r'\Process(audiodg)\Working Set - Private']
+
+        stats_list_mobileDLworld = [r'\Process(MobileDLReaderSampleApp)\Private Bytes',
+                                    r'\Process(MobileDLReaderSampleApp)\Virtual Bytes',
+                                    r'\Process(MobileDLReaderSampleApp)\Working Set - Private']
 
         stats_list_dotnetworld = [r'\Process(IDEMIA.DocAuth.DocumentService)\Private Bytes',
                                   r'\Process(IDEMIA.DocAuth.DocumentService)\Virtual Bytes',
@@ -433,6 +447,8 @@ class PerfMonitor:
             stats_list = stats_list_newworld
         elif which_world == 'dotnetworld':
             stats_list = stats_list_dotnetworld
+        elif which_world == 'mobileDLworld':
+            stats_list = stats_list_mobileDLworld
         elif which_world == 'biocoreworld':
             stats_list = stats_list_biocoreworld
         elif which_world == 'ecatworld':
@@ -623,6 +639,8 @@ def main():
         pm.data_collector("ecatworld")
     elif choice.subcommand == "record" and choice.world == "biocoreworld":
         pm.data_collector("biocoreworld")
+    elif choice.subcommand == "record" and choice.world == "mobileDLworld":
+        pm.data_collector("mobileDLworld")
     elif choice.subcommand == "record" and choice.world == "dotnetworld":
         pm.data_collector("dotnetworld")
     elif choice.subcommand == "record" and choice.world == "catcworld":
@@ -642,6 +660,9 @@ def main():
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "ecatworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_EcatWorld.csv")
+        pm.data_plotter()
+    elif choice.subcommand == "report" and choice.world == "mobileDLworld":
+        pm.file_reader(r"c:\Temp\DocAuthPerfData_MobileDLReaderSampleAppWorld.csv")
         pm.data_plotter()
     elif choice.subcommand == "report" and choice.world == "biocoreworld":
         pm.file_reader(r"c:\Temp\DocAuthPerfData_BioCoreWorld.csv")
